@@ -1,0 +1,52 @@
+{% load static %}
+<!-- Page used as base-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <!-- use of  css -->
+
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <!-- use of  js -->
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Multimodal Image Registration</title>
+</head>
+<body class = "bg"  >
+  <div  class="col-md-12" style="padding:0px" >
+   <nav class="navbar navbar-expand-lg navbar-dark " style="background-color: #10966e">
+       <a class="navbar-brand" href="{% url 'home:home' %}" class="txt_blanco ">
+           <h1 class="txt_blanco " >Multimodal Image Registration</h1>
+        </a>
+
+
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active log">
+                            <a class="nav-link" href="#" style="color: #fff;" >about</a>
+                        </li>
+
+
+                    </ul>
+
+
+
+
+    </nav>
+</div>
+
+
+
+
+   {% block content %}
+   {% endblock content %}
+</div>
+
+</body>
+
+</html>

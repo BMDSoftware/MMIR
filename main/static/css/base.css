@@ -1,0 +1,65 @@
+{% load static %}
+
+@font-face {
+    font-family: FuturaStd-CondensedLight;
+    src: url("{% static 'css/fonts/Futura/FuturaStd-CondensedLight.otf' %}");
+}
+
+@font-face {
+    font-family: FuturaStd-MediumCondensed;
+    src: url("{% static 'css/fonts/Futura/FuturaStd-MediumCondensed.otf' %}");
+}
+
+.fLight{
+    font-family: FuturaStd-CondensedLight;
+}
+
+.fMediumC {
+
+    font-family: FuturaStd-MediumCondensed;
+
+}
+
+.bg {
+
+     background-color: #e4e4e3;
+}
+
+.txt_blanco{
+    color: #fff;
+}
+
+
+.bg2 {
+
+     background-color:#fff;
+     height: 85%;
+
+    /* Center and scale the image nicely */
+    background-position: top;
+    background-repeat: no-repeat;
+    /*background-size: cover;*/
+   background-size: 100% 100%;
+
+
+
+}
+
+.margIns {
+
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
+
+}
+
+
+.nav-link, .nav-link:hover {
+color: #18b686 ;
+}
+
+.pagination {
+    --bs-pagination-active-bg: #18b686 ;
+    --bs-pagination-active-border-color: #17a479;
+}

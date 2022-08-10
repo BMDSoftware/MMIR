@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- use of  css -->
+
+<link rel="stylesheet" href="{% static 'css/dataTables.bootstrap5.css' %}">
+
+<!-- use of  js -->
+<script src="{% static 'js/datatables.js' %}"></script>
+<script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+
+<br>
+
+
+<div class="container bg2 " style="padding-top: 1px; padding-bottom: 1px; border-style: solid; border-color: #10966e;">
+    <div class="margIns">
+    <ul class="nav nav-tabs " role="tablist">
+        <li class="nav-item " role="presentation">
+            <button  class="nav-link active" data-bs-toggle="tab" type="button"  data-bs-target="#tableProj" role="tab" >Previous projects</button >
+        </li>
+        <li >
+            <button  class="nav-link tabCol" data-bs-toggle="tab" type="button"  data-bs-target="#formNew" role="tab">New projects</button >
+        </li>
+
+
+
+    </ul>
+
+    <div class="tab-content">
+        <div id="tableProj" role="tabpanel" class="tab-pane ">
+
+            <div class="row justify-content-center ">
+                <div class="col-12">
+                    <br>
+                    <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="table1" >
+                        <thead>
+                            <tr style = "text-align: center;">
+
+                                <th style = "text-align: center;" >Project name</th>
+                                <th style = "text-align: center;" >Actions</th>
+
+
+
+
+                            </tr>
+                        </thead>
+                        <tbody style = "text-align: center;">
+                            {% for d in dtable %}
+                                {%ifchanged d.name %}
+
+                                    <tr style = "text-align: center;">
+                                        <td style = "text-align: center;" > {{d.name}}</td>
+                                        <td style = "text-align: center;" >no actions yet</td>
+
+
+                                    </tr>
+
+
+                                {% endifchanged %}
+
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                </div>
+
+
+        </div>
+         </div>
+        <div id="formNew" role="tabpanel" class="tab-pane active">
+
+        <div class="margIns">
+
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="basic-addon1">Project Name</span>
+              <input type="text" class="form-control" placeholder="Project Name" aria-describedby="basic-addon1">
+            </div>
+
+            <div class="mb-3">
+                <label for="loadImage1" class="form-label">Fixed Image</label>
+
+              <input class="form-control" type="file" id="loadImage1">
+            </div>
+
+            <div class="mb-3">
+                <label for="loadImage2" class="form-label">Moving Image</label>
+              <input class="form-control" type="file" id="loadImage2">
+            </div>
+            <div id="Algorithms">
+
+            </div>
+
+            <button class="btn"  id="submit">Save</button>
+
+        </div>
+
+
+        </div>
+    </div>
+    </div>
+</div>
+
+
+<script>
+$(document).ready( function () {
+    $('#table1').DataTable();
+} );
+
+algoritmLength = {{ alg|length }}
+
+var arr = [];
+{% for al in alg %}
+    arr.push("{{al.name}}");
+{% endfor %}
+
+
+console.log(arr)
+var cont= 0;
+//initial select
+$( "#Algorithms" ).append( "<div id='alg0' class='input-group mb-3' > <span class='input-group-text' >Algorithm</span>"+
+                                " <select id=selectAl0 class='form-select'>"
+                                {% for al in alg %}
+                                    +"<option>{{al.name}}</option>"
+                                {% endfor %}
+                                +"</select>" +
+                                " <button class='btn'  id='less'>-</button> <button class='btn'  id='more'>+</button></div>" );
+
+
+$( "#more" ).click(function() {
+   if(algoritmLength > cont+1){
+        cont= cont + 1;
+        var newId = "id='alg" + cont +"'"
+        //array for validation of the algorithms options
+        //contain all the options selected previosly for not used twice
+        let arrVal = []
+        for(i=0;i<cont;i++){
+            valSelect = $("#" + "alg" + i + " option:selected").text();
+            arrVal.push(valSelect);
+        }
+
+        //creation of new option values
+        let options = []
+        for(i = 0; i < arr.length; i++){
+            if (!(arrVal.includes(arr[i]))){
+                options.push(arr[i]);
+
+            }
+        }
+
+        let stringOptions = ""
+        for (i=0; i < options.length; i++){
+            stringOptions =  stringOptions + "<option>"+options[i]+"</option>"
+        }
+
+
+
+        $( "#Algorithms" ).append( "<div "+ newId +
+                                " class='input-group mb-3' > <span class='input-group-text' >Algorithm</span>"+
+                                " <select "+ "id='selectAl" + cont +"'"+" class='form-select'> "+ stringOptions +"</select>" +
+                                "</div>" );
+
+        $("#less").attr("disabled",false);
+        $("#" + "selectAl" + (cont-1)).attr("disabled",true);
+
+  }else{
+    $(this).attr("disabled", true);
+  }
+});
+
+$( "#less" ).click(function() {
+
+    if (cont > 0) {
+
+        $( "#alg"+ cont ).remove();
+        cont= cont - 1;
+        $("#" + "selectAl" + cont ).attr("disabled",false);
+        if(algoritmLength > cont+1){
+            $("#more").attr("disabled",false);
+        }
+
+    }else{
+        $(this).attr("disabled", true);
+    }
+
+});
+</script>
+
+
+
+{% endblock content %}

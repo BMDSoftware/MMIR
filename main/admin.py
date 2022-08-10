@@ -1,0 +1,28 @@
+from django.contrib import admin
+from .models import *
+# Register your models here.
+
+
+@admin.register(Projects)
+class ProjectAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+    list_display = ('name',)
+    list_filter = ('name',)
+
+@admin.register(Algorithms)
+class AlgorithmAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+    list_display = ('name',)
+    list_filter = ('name',)
+
+@admin.register(Results)
+class ResultAdmin(admin.ModelAdmin):
+    search_fields = ('project','algorithm')
+    list_display = ('project','algorithm')
+    list_filter = ('project','algorithm')
+
+@admin.register(Metrics)
+class MetricsAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+    list_display = ('name','value')
+    list_filter = ('name',)
