@@ -17,9 +17,12 @@ class Algorithms(models.Model):
         return unicode(self.name)
 
 class Results(models.Model):
-    warping = models.ImageField(upload_to='img/warp/')
+    warping = models.ImageField(upload_to='img/warp/', blank=True)
     algorithm = models.ForeignKey('Algorithms', on_delete=models.CASCADE)
     project = models.ForeignKey('Projects', on_delete=models.CASCADE)
+
+    def __unicode__(self):
+        return unicode(self.project.name +  " - " + self.algorithm.name )
 
 
 class Metrics(models.Model):

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load bootstrap_icons %}
 {% block content %}
 
 <!-- use of  css -->
@@ -28,7 +29,7 @@
     </ul>
 
     <div class="tab-content">
-        <div id="tableProj" role="tabpanel" class="tab-pane ">
+        <div id="tableProj" role="tabpanel" class="tab-pane active ">
 
             <div class="row justify-content-center ">
                 <div class="col-12">
@@ -51,7 +52,12 @@
 
                                     <tr style = "text-align: center;">
                                         <td style = "text-align: center;" > {{d.name}}</td>
-                                        <td style = "text-align: center;" >no actions yet</td>
+                                        <td style = "text-align: center;" >
+                                            <a class="btn btn-outline-success" > {% bs_icon 'play-fill' %}</a>
+                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' %}">
+                                                {% bs_icon 'eye' %}
+                                            </a>
+                                        </td>
 
 
                                     </tr>
@@ -68,32 +74,40 @@
 
         </div>
          </div>
-        <div id="formNew" role="tabpanel" class="tab-pane active">
 
-        <div class="margIns">
+        <div id="formNew" role="tabpanel" class="tab-pane ">
 
-            <div class="input-group mb-3">
-              <span class="input-group-text" id="basic-addon1">Project Name</span>
-              <input type="text" class="form-control" placeholder="Project Name" aria-describedby="basic-addon1">
-            </div>
+            <form id="savingNewProject" action="{% url 'home:saveNP' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <p>{{ form.non_field_errors }}</p>
+                <p>{{ form.docfile.label_tag }}</p>
 
-            <div class="mb-3">
-                <label for="loadImage1" class="form-label">Fixed Image</label>
+                <div class="margIns">
 
-              <input class="form-control" type="file" id="loadImage1">
-            </div>
+                    <div class="input-group mb-3">
+                      <span class="input-group-text" id="basic-addon1">Project Name</span>
+                      <input name="pName" id="pName" type="text" class="form-control" placeholder="Project Name" >
+                    </div>
 
-            <div class="mb-3">
-                <label for="loadImage2" class="form-label">Moving Image</label>
-              <input class="form-control" type="file" id="loadImage2">
-            </div>
-            <div id="Algorithms">
+                    <div class="mb-3">
+                        <label for="fImg" class="form-label">Fixed Image</label>
 
-            </div>
+                      <input id="fImg" name ="img1" class="form-control" type="file" >
+                    </div>
 
-            <button class="btn"  id="submit">Save</button>
+                    <div class="mb-3">
+                        <label for="mImg" class="form-label">Moving Image</label>
+                      <input id="mImg" name = "img2" class="form-control" type="file" >
+                    </div>
+                    <div id="Algorithms">
 
-        </div>
+                    </div>
+                    <input id="algNum" name = "algNum"  type="number" value="0" style="display:none">
+                    <button class="btn btn-outline-success" type="submit" id="saveProj">Save</button>
+
+                </div>
+
+            </form>
 
 
         </div>
@@ -118,13 +132,13 @@ var arr = [];
 console.log(arr)
 var cont= 0;
 //initial select
-$( "#Algorithms" ).append( "<div id='alg0' class='input-group mb-3' > <span class='input-group-text' >Algorithm</span>"+
-                                " <select id=selectAl0 class='form-select'>"
+$( "#Algorithms" ).append( "<div id='alg0'  class='input-group mb-3' > <span class='input-group-text' >Algorithm</span>"+
+                                " <select id='selectAl0' name='alg0' class='form-select'>"
                                 {% for al in alg %}
                                     +"<option>{{al.name}}</option>"
                                 {% endfor %}
                                 +"</select>" +
-                                " <button class='btn'  id='less'>-</button> <button class='btn'  id='more'>+</button></div>" );
+                                " <a class='btn btn-outline-secondary'  id='less'>-</a> <a class='btn btn-outline-secondary'  id='more'>+</a></div>" );
 
 
 $( "#more" ).click(function() {
@@ -157,7 +171,7 @@ $( "#more" ).click(function() {
 
         $( "#Algorithms" ).append( "<div "+ newId +
                                 " class='input-group mb-3' > <span class='input-group-text' >Algorithm</span>"+
-                                " <select "+ "id='selectAl" + cont +"'"+" class='form-select'> "+ stringOptions +"</select>" +
+                                " <select "+ "id='selectAl" + cont +"'"+  "name='alg" + cont +"'" +    "   class='form-select'> "+ stringOptions +"</select>" +
                                 "</div>" );
 
         $("#less").attr("disabled",false);
@@ -166,6 +180,8 @@ $( "#more" ).click(function() {
   }else{
     $(this).attr("disabled", true);
   }
+
+   $("#algNum").val(cont);
 });
 
 $( "#less" ).click(function() {
@@ -183,7 +199,15 @@ $( "#less" ).click(function() {
         $(this).attr("disabled", true);
     }
 
+    $("#algNum").val(cont);
+
 });
+
+
+$('#savingNewProject').on('submit', function() {
+    $('input, select').prop('disabled', false);
+});
+
 </script>
 
 

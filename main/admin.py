@@ -18,8 +18,15 @@ class AlgorithmAdmin(admin.ModelAdmin):
 @admin.register(Results)
 class ResultAdmin(admin.ModelAdmin):
     search_fields = ('project','algorithm')
-    list_display = ('project','algorithm')
+    list_display = ('name_project','name_algorithm')
     list_filter = ('project','algorithm')
+
+    def name_project(self, obj):
+        return obj.project.name
+    def name_algorithm(self, obj):
+        return obj.algorithm.name
+
+
 
 @admin.register(Metrics)
 class MetricsAdmin(admin.ModelAdmin):
