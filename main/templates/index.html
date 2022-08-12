@@ -54,7 +54,7 @@
                                         <td style = "text-align: center;" > {{d.name}}</td>
                                         <td style = "text-align: center;" >
                                             <a class="btn btn-outline-success" > {% bs_icon 'play-fill' %}</a>
-                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' %}">
+                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' id_Project=d.id %}">
                                                 {% bs_icon 'eye' %}
                                             </a>
                                         </td>

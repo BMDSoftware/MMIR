@@ -44,6 +44,10 @@
 
 
 }
+.bg3 {
+
+     background-color: #c9c9c9;
+}
 
 .margIns {
 
@@ -51,6 +55,15 @@
   margin-bottom: 10px;
   margin-right: 10px;
   margin-left: 10px;
+
+}
+
+.padIns {
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 10px;
+  padding-left: 10px;
 
 }
 
@@ -62,4 +75,17 @@ color: #18b686 ;
 .pagination {
     --bs-pagination-active-bg: #18b686 ;
     --bs-pagination-active-border-color: #17a479;
+}
+
+.flex-grow {
+    flex: 1 0 auto;
+}
+
+.wrapper, html, body {
+    height: 100%;
+    margin: 0;
+}
+.wrapper {
+    display: flex;
+    flex-direction: column;
 }

@@ -3,5 +3,100 @@
 {% load bootstrap_icons %}
 {% block content %}
 
-<p>hola mundo</p>
+<!-- use of  js -->
+<script src="{% static 'js/openseadragon.js' %}"></script>
+
+
+<!-- use of  css -->
+
+
+<div class="col-md-12 " style="background-color: #c9c9c9">
+<div  class="container padIns">
+    <div class="row align-items-center ">
+        <div class="input-group col ">
+              <span class="input-group-text" id="basic-addon1">Select Algorithms</span>
+              <select name="SelectAlgor" id="SelectAlgor" class="form-control"  >
+                  <option>
+                        hola
+                    </option>
+              </select>
+        </div>
+
+        <div class="input-group col">
+              <span class="input-group-text" id="basic-addon2">Select viewer</span>
+              <select name="SelectView" id="SelectView" class="form-control"  >
+                  <option>
+                        hola
+                    </option>
+              </select>
+        </div>
+
+        <div class="input-group col">
+              <span class="input-group-text" id="basic-addon3">Select Visualizer</span>
+              <select name="SelectVis" id="SelectVis" class="form-control"  >
+                  <option>
+                        hola
+                    </option>
+              </select>
+        </div>
+
+
+    </div>
+</div>
+
+</div>
+
+
+
+
+<div class="row " style="flex:2; display: flex;">
+        <div class="col " style=" flex: 1 1 ;  min-height: 100%;">
+
+            <div id="seadragon-viewer"  style="width:100%; height:100%; background-color: #000;"></div>
+        </div>
+
+    <div class="col  " style=" flex: 1 1;  min-height: 100%;">
+
+        <div id="seadragon-viewer2"  style="width:100%; height:100%; background-color: #000;"></div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+
+
+var viewer = OpenSeadragon({
+  id: "seadragon-viewer",
+
+  tileSources: {
+        type: 'image',
+        url:  '{{ fixImg.url }}',
+        buildPyramid: false
+    }
+});
+
+var viewer2 = OpenSeadragon({
+  id: "seadragon-viewer2",
+
+  tileSources: {
+        type: 'image',
+        url:  '{{ movImag.url }}',
+        buildPyramid: false
+    }
+});
+
+
+</script>
+
+
 {% endblock content %}

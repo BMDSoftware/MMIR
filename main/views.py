@@ -59,7 +59,13 @@ def saveNP(request):
     return render(request, 'index.html', context)
 
 
-def viewer(request):
+def viewer(request,id_Project):
+    project = Projects.objects.get(id=id_Project)
+    img1 = project.image1
+    img2 = project.image2
+
+    context= {"fixImg": img1,"movImag": img2}
 
 
-    return render(request, 'viewer.html')
+
+    return render(request, 'viewer.html', context)
