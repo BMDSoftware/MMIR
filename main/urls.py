@@ -10,6 +10,7 @@ urlpatterns = [
     re_path(r'^$', views.home, name='home'),
     re_path(r'^saveNP/$', views.saveNP, name='saveNP'),
     path('viewer/<int:id_Project>', views.viewer, name='viewer'),
+    path('runAlg/', views.runAlg, name='runAlg'),
 
     #re_path(r'^about/$', views.historial, name =  'about'),
 

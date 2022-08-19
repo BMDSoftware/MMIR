@@ -17,7 +17,11 @@ class Algorithms(models.Model):
         return unicode(self.name)
 
 class Results(models.Model):
-    warping = models.ImageField(upload_to='img/warp/', blank=True)
+    warping = models.ImageField(upload_to='img/results/warp/', blank=True)
+    features_mov = models.ImageField(upload_to='img/results/f_mov/', blank=True)
+    features_fix = models.ImageField(upload_to='img/results/f_fix/', blank=True)
+    line_match = models.ImageField(upload_to='img/results/l_match/', blank=True)
+
     algorithm = models.ForeignKey('Algorithms', on_delete=models.CASCADE)
     project = models.ForeignKey('Projects', on_delete=models.CASCADE)
 

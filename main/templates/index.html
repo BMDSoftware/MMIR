@@ -53,7 +53,7 @@
                                     <tr style = "text-align: center;">
                                         <td style = "text-align: center;" > {{d.name}}</td>
                                         <td style = "text-align: center;" >
-                                            <a class="btn btn-outline-success" > {% bs_icon 'play-fill' %}</a>
+                                            <a  name="{{d.id}}" class="btn btn-outline-success run" > {% bs_icon 'play-fill' %}</a>
                                             <a class="btn btn-outline-success" href="{% url 'home:viewer' id_Project=d.id %}">
                                                 {% bs_icon 'eye' %}
                                             </a>
@@ -140,6 +140,30 @@ $( "#Algorithms" ).append( "<div id='alg0'  class='input-group mb-3' > <span cla
                                 +"</select>" +
                                 " <a class='btn btn-outline-secondary'  id='less'>-</a> <a class='btn btn-outline-secondary'  id='more'>+</a></div>" );
 
+$( ".run" ).click(function() {
+
+    projectId = $(this).attr('name')
+    crf = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+    $.ajax({
+        type: 'POST',
+        url: "{% url 'home:runAlg' %}",
+        data: jQuery.param({ csrfmiddlewaretoken: crf, pId: projectId }) ,
+        success: function (data) {
+             if (data) {
+                 var obj = JSON.stringify(data);
+                 obj = JSON.parse(obj);
+
+                 console.log(obj)
+             }
+
+        },
+        error: function (data) {
+            console.log("error")
+        }
+    })
+
+});
 
 $( "#more" ).click(function() {
    if(algoritmLength > cont+1){

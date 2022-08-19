@@ -77,15 +77,4 @@ color: #18b686 ;
     --bs-pagination-active-border-color: #17a479;
 }
 
-.flex-grow {
-    flex: 1 0 auto;
-}
 
-.wrapper, html, body {
-    height: 100%;
-    margin: 0;
-}
-.wrapper {
-    display: flex;
-    flex-direction: column;
-}
