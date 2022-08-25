@@ -2,6 +2,8 @@ from django.shortcuts import render
 from main.models import *
 from main.forms import *
 from django.http import JsonResponse
+from django.core.files.base import ContentFile
+import SimpleITK as sitk
 import json
 import cv2
 import numpy as np
@@ -62,16 +64,57 @@ def saveNP(request):
     return render(request, 'index.html', context)
 
 
-def viewer(request,id_Project):
+
+
+def viewer(request,id_Project, id_viewer=0, id_alg="None"):
+
+    if id_alg != "None":
+        id_alg = int(id_alg)
+        res = Results.objects.get(project=id_Project, algorithm=id_alg)
+        features_fix = res.features_fix
+        features_mov = res.features_mov
+        warpImage = res.warping
+        matchingImage = res.line_match
+        chessImage =  res.chessboard
+    else:
+        features_fix = None
+        features_mov = None
+        warpImage = None
+        matchingImage = None
+        chessImage = None
 
     project = Projects.objects.get(id=id_Project)
     alg = Results.objects.filter(project= id_Project)
+
     img1 = project.image1
     img2 = project.image2
 
-    context= {"fixImg": img1,"movImag": img2, "alg":alg}
+
+    context= {
+                "alg":alg,
+                "id_project":int(id_Project),
+                "id_viewer":int(id_viewer),
+                "id_alg":id_alg,
+                "fixImg": img1,
+                "movImag": img2,
+                "features_fix": features_fix,
+                "features_mov": features_mov,
+                "warpImage": warpImage,
+                "matchingImage": matchingImage,
+                "chessImage": chessImage
+
+            }
 
     return render(request, 'viewer.html', context)
+
+def runChessboard(request):
+    data = {"msg": "is a get?"}
+
+    if request.GET:
+        if request.method == "GET":
+            print("por escribir")
+
+    return JsonResponse(data)
 
 def runAlg(request):
     res = {"alg":[],"result":[]}
@@ -119,8 +162,17 @@ def runAlg(request):
 
                 Path(f"media/img/results/{id_Project}").mkdir(parents=True, exist_ok=True)
 
-                cv2.imwrite(f"media/img/results/{id_Project}/features_{alg}_moving.jpg", keyDraw1)
-                cv2.imwrite(f"media/img/results/{id_Project}/features_{alg}_fixing.jpg", keyDraw2)
+                #save in model opencv images
+                _, bufMov = cv2.imencode('.jpg', keyDraw1)
+                _, bufFix = cv2.imencode('.jpg', keyDraw2)
+                movingImage = ContentFile(bufMov.tobytes())
+                fixingImage = ContentFile(bufFix.tobytes())
+
+                al.features_mov.save(f"features_{id_Project}_{alg}_moving.jpg",movingImage)
+                al.features_fix.save(f"features_{id_Project}_{alg}_fixing.jpg",fixingImage)
+
+                #cv2.imwrite(f"media/img/results/{id_Project}/features_{alg}_moving.jpg", keyDraw1)
+                #cv2.imwrite(f"media/img/results/{id_Project}/features_{alg}_fixing.jpg", keyDraw2)
 
                 FLAN_INDEX_KDTREE = 0
                 index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
@@ -140,7 +192,14 @@ def runAlg(request):
                 matches = good_matches
 
                 lineMatch = cv2.drawMatches(img_color, keypoints, img_color2, keypoints2, matches[:50], None, flags=2)
-                cv2.imwrite(f"media/img/results/{id_Project}/lineMatch_{alg}.jpg", lineMatch)
+
+                _, bufMatch = cv2.imencode('.jpg', lineMatch)
+
+                matchingImage = ContentFile(bufMatch.tobytes())
+
+                al.line_match.save(f"lineMatch_{id_Project}_{alg}.jpg", matchingImage)
+
+                #cv2.imwrite(f"media/img/results/{id_Project}/lineMatch_{alg}.jpg", lineMatch)
 
                 no_of_matches = len(matches)
 
@@ -157,7 +216,33 @@ def runAlg(request):
                 if no_of_matches > 3:
                     homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
                     transformed_img = cv2.warpPerspective(img_color, homography, (width, height))
-                    cv2.imwrite(f"media/img/results/{id_Project}/warp_{alg}.jpg", transformed_img)
+                    _, bufWarp = cv2.imencode('.jpg', transformed_img)
+
+                    warpImage = ContentFile(bufWarp.tobytes())
+
+                    al.warping.save(f"warp_{id_Project}_{alg}.jpg", warpImage)
+
+                    #cv2.imwrite(f"media/img/results/{id_Project}/warp_{alg}.jpg", transformed_img)
+
+
+
+                    img2_ori_stk = sitk.ReadImage(f"media/img/results/warp/warp_{id_Project}_{alg}.jpg")
+                    img1_stk = sitk.ReadImage("media/" + im1Name)
+
+                    img2_ori_stk.SetSpacing([1.0, 1.0])
+                    img1_stk.SetSpacing([1.0, 1.0])
+
+                    image_list = sitk.CheckerBoard(img2_ori_stk, img1_stk, [4, 4, 4])
+                    ##convert itk to array
+                    array = sitk.GetArrayFromImage(image_list)
+                    array_rgb = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
+
+                    _, bufChess = cv2.imencode('.jpg', array_rgb)
+                    chessImage = ContentFile(bufChess.tobytes())
+
+                    al.chessboard.save(f"chess_{id_Project}_{alg}.jpg", chessImage)
+
+
                     res["result"].append(True)
                 else:
                     res["result"].append(False)

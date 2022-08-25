@@ -27,10 +27,20 @@
         <div class="input-group col">
               <span class="input-group-text" id="basic-addon2">Select viewer</span>
               <select name="SelectView" id="SelectView" class="form-control"  >
-                  <option selected>Original Images</option>
-                  <option >Feature Extraction</option>
-                  <option>Feature lines</option>
-                  <option>Chess Board</option>
+                  <option value="0" selected>Original Images</option>
+                  {% if features_fix and features_mov  %}
+                  <option value="1" >Feature Extraction</option>
+                  {% endif %}
+                  {% if matchingImage  %}
+                  <option value="2" >Matching lines</option>
+                  {% endif %}
+                  {% if warpImage  %}
+                  <option value="3" >Warping Image</option>
+                  {% endif %}
+                  {% if chessImage %}
+                  <option value="4" >Chess Board</option>
+                  {% endif %}
+
               </select>
         </div>
 
@@ -56,7 +66,27 @@
 
     <div class="row " style="flex:2; display: flex;">
 
-            <div class="col " style=" flex: 1 1 ;  min-height: 100%;">
+        {% if id_viewer > 1 %}
+
+        <div class="col " style=" flex: 1 1 ;  min-height: 100%;">
+
+                <div class="conta">
+                    <div id="seadragon-viewer"  class = "posCanvas" style="width:100%; height:100%;  "></div>
+                    <div id="btnViw1" class="stack-top posCanvas">
+
+                        <a id="zoom_in_btn1" class="btn btn-outline-success" > {% bs_icon 'zoom-in' %}</a>
+                        <a id="zoom_out_btn1"  class="btn btn-outline-success" > {% bs_icon 'zoom-out' %}</a>
+                        <a id="home_btn1"  class="btn btn-outline-success" > {% bs_icon 'house-door' %}</a>
+                        <a id="full_page_btn1"  class="btn btn-outline-success" > {% bs_icon 'arrows-fullscreen' %}</a>
+
+                    </div>
+                </div>
+
+            </div>
+
+        {% else %}
+
+        <div class="col " style=" flex: 1 1 ;  min-height: 100%;">
 
                 <div class="conta">
                     <div id="seadragon-viewer"  class = "posCanvas" style="width:100%; height:100%;  "></div>
@@ -85,6 +115,8 @@
             </div>
         </div>
 
+        {% endif %}
+
 
 
     </div>
@@ -101,7 +133,9 @@
 
 <script>
 
+$('#SelectView option[value="{{id_viewer}}"]').attr("selected", "selected");
 
+{% if id_viewer > 1 %}
 
 var viewer = OpenSeadragon({
   id: "seadragon-viewer",
@@ -116,7 +150,40 @@ var viewer = OpenSeadragon({
 
   tileSources: {
         type: 'image',
-        url:  '{{ fixImg.url }}',
+        {% if id_viewer == 2 %}
+            url:  '{{ matchingImage.url }}',
+        {% elif id_viewer == 3 %}
+            url:  '{{ warpImage.url }}',
+        {% elif id_viewer == 4 %}
+            url:  '{{ chessImage.url }}',
+        {% endif %}
+
+        buildPyramid: false
+    }
+});
+
+
+
+{% else %}
+var viewer = OpenSeadragon({
+  id: "seadragon-viewer",
+  showNavigator:  true,
+  zoomInButton:   "zoom_in_btn1",
+  zoomOutButton:  "zoom_out_btn1",
+  homeButton:     "home_btn1",
+  fullPageButton: "full_page_btn1",
+   maxZoomLevel: 	10,
+
+
+
+  tileSources: {
+        type: 'image',
+        {% if id_viewer == 0 %}
+            url:  '{{ fixImg.url }}',
+        {% elif id_viewer == 1 %}
+            url:  '{{ features_fix.url }}',
+        {% endif %}
+
         buildPyramid: false
     }
 });
@@ -133,17 +200,35 @@ var viewer2 = OpenSeadragon({
 
   tileSources: {
         type: 'image',
-        url:  '{{ movImag.url }}',
+        {% if id_viewer == 0 %}
+            url:  '{{ movImag.url }}',
+        {% elif id_viewer == 1 %}
+            url:  '{{ features_mov.url }}',
+        {% endif %}
+
         buildPyramid: false
     }
 });
 
-$("#SelectAlgor").change(function() {
+{% endif %}
+
+$("#SelectAlgor").on('change', function() {
+
+    alert( this.value );
+    val= this.value
+    viewer_id = $("#SelectView").val();
+    url = "{% url 'home:viewer' id_project  %}";
+    document.location.href = url + "/"+ viewer_id + "/"+ val;
 
 
 })
 
-$("#SelectView").change(function() {
+$("#SelectView").on('change', function() {
+    val= this.value
+    alg_id = $("#SelectAlgor").val();
+    url = "{% url 'home:viewer' id_project  %}";
+    document.location.href = url + "/"+ val + "/" + alg_id;
+
 
 
 })

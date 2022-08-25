@@ -47,6 +47,7 @@
                             </tr>
                         </thead>
                         <tbody style = "text-align: center;">
+
                             {% for d in dtable %}
                                 {%ifchanged d.name %}
 
@@ -54,7 +55,7 @@
                                         <td style = "text-align: center;" > {{d.name}}</td>
                                         <td style = "text-align: center;" >
                                             <a  name="{{d.id}}" class="btn btn-outline-success run" > {% bs_icon 'play-fill' %}</a>
-                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' id_Project=d.id %}">
+                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' d.id 0 2 %}">
                                                 {% bs_icon 'eye' %}
                                             </a>
                                         </td>
