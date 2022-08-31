@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load extraTags %}
 {% load bootstrap_icons %}
 {% block content %}
 
@@ -10,6 +11,8 @@
 <!-- use of  js -->
 <script src="{% static 'js/datatables.js' %}"></script>
 <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+
+<div id="msg" ></div>
 
 <br>
 
@@ -55,7 +58,7 @@
                                         <td style = "text-align: center;" > {{d.name}}</td>
                                         <td style = "text-align: center;" >
                                             <a  name="{{d.id}}" class="btn btn-outline-success run" > {% bs_icon 'play-fill' %}</a>
-                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' d.id 0 2 %}">
+                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' d.id 0 d.id|getFirstAlg %}">
                                                 {% bs_icon 'eye' %}
                                             </a>
                                         </td>
@@ -145,6 +148,8 @@ $( ".run" ).click(function() {
 
     projectId = $(this).attr('name')
     crf = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+    $("#msg").removeClass();
+    $( "#msg" ).text("");
 
     $.ajax({
         type: 'POST',
@@ -156,11 +161,17 @@ $( ".run" ).click(function() {
                  obj = JSON.parse(obj);
 
                  console.log(obj)
+
+                 $( "#msg" ).addClass( "alert alert-success" );
+                 $( "#msg" ).text("the algorithms were successfully executed");
+
+
              }
 
         },
         error: function (data) {
-            console.log("error")
+            $( "#msg" ).addClass( "alert alert-danger" );
+            $( "#msg" ).text("the algorithms were not successfully executed, please check in the visualizer if at least 4 matches was founded");
         }
     })
 

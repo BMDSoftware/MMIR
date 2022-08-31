@@ -4,10 +4,13 @@ from main.forms import *
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
 import SimpleITK as sitk
+from pathlib import Path
+import numpy as np
+import pyvips
 import json
 import cv2
-import numpy as np
-from pathlib import Path
+
+
 
 # Create your views here.
 def home(request):
@@ -41,6 +44,9 @@ def saveNP(request):
 
                 newProject = Projects(name= Pname,image1=file, image2=file2)
                 newProject.save()
+
+                createPyramid(f"media/img/fixed/{file}", f"media/img/fixed/{newProject.id}_fix")
+                createPyramid(f"media/img/moving/{file2}", f"media/img/moving/{newProject.id}_mov")
 
                 print(request.POST)
                 for i in range(int(algNum)+1):
@@ -76,6 +82,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
         warpImage = res.warping
         matchingImage = res.line_match
         chessImage =  res.chessboard
+
+
     else:
         features_fix = None
         features_mov = None
@@ -86,8 +94,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
     project = Projects.objects.get(id=id_Project)
     alg = Results.objects.filter(project= id_Project)
 
-    img1 = project.image1
-    img2 = project.image2
+    #img1 = project.image1
+    #img2 = project.image2
 
 
     context= {
@@ -95,8 +103,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
                 "id_project":int(id_Project),
                 "id_viewer":int(id_viewer),
                 "id_alg":id_alg,
-                "fixImg": img1,
-                "movImag": img2,
+                "fixImg": f"/main/media/img/fixed/{project.id}_fix.dzi",
+                "movImag": f"/main/media/img/moving/{project.id}_mov.dzi",
                 "features_fix": features_fix,
                 "features_mov": features_mov,
                 "warpImage": warpImage,
@@ -116,8 +124,44 @@ def runChessboard(request):
 
     return JsonResponse(data)
 
+
+def savingModel(modelPar, image, strName):
+    _, buf = cv2.imencode('.jpg', image)
+    savingImage = ContentFile(buf.tobytes())
+    modelPar.save(strName , savingImage)
+
+def createPyramid (cvImagePath,pyramidPath):
+
+
+    image = pyvips.Image.new_from_file(cvImagePath)
+    folderName = pyramidPath.split("/")
+
+    image.dzsave(
+        cvImagePath,
+        basename=folderName[-1],
+        suffix=".png",
+        tile_size=1024,
+        overlap=0,
+        depth="onepixel",
+        properties=False
+    )
+
+def reduceImage(img):
+    height, width, _ = img.shape
+    #scale_percentage using 2048 as width
+    sp = (2048*100)/width
+    NewWidth = int(width * sp / 100)
+    NewHeight = int(height * sp / 100)
+    dim = (NewWidth, NewHeight)
+    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+    return resized
+
+
+
+
 def runAlg(request):
     res = {"alg":[],"result":[]}
+    resultsPath = "media/img/results"
     if request.POST:
         if request.method == "POST":
 
@@ -135,6 +179,9 @@ def runAlg(request):
                 img_color = cv2.imread("media/" + im2Name)
                 img_color2 = cv2.imread("media/"+ im1Name)
 
+                #createPyramid(f"media/{im1Name}", f"media/img/fixed/{id_Project}_fix")
+                #createPyramid(f"media/{im2Name}", f"media/img/moving/{id_Project}_mov")
+
 
                 img = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
                 img2 = cv2.cvtColor(img_color2, cv2.COLOR_BGR2GRAY)
@@ -145,7 +192,15 @@ def runAlg(request):
                 if (alg == "Sift"):
                     fExt = cv2.xfeatures2d.SIFT_create()
 
+                elif (alg == "Sift+Colorinvertion"):
+                    fExt = cv2.xfeatures2d.SIFT_create()
+                    gray_negative = abs(255 - img2)
+                    img_flip_ud = cv2.flip(gray_negative, 1)
+                    img_color2 = cv2.flip(img_color2, 1)
+                    img2 = img_flip_ud
+
                 elif (alg == "ORB"):
+
                     fExt = cv2.ORB_create(nfeatures=1000)
                 elif (alg == "BRIEF"):
                     fExt = cv2.features2d.BriefDescriptorExtractor()
@@ -160,19 +215,17 @@ def runAlg(request):
                 keyDraw1 = cv2.drawKeypoints(img, keypoints, None)
                 keyDraw2 = cv2.drawKeypoints(img2, keypoints2, None)
 
-                Path(f"media/img/results/{id_Project}").mkdir(parents=True, exist_ok=True)
+                #Path(f"{resultsPath}/{id_Project}/").mkdir(parents=True, exist_ok=True)
 
-                #save in model opencv images
-                _, bufMov = cv2.imencode('.jpg', keyDraw1)
-                _, bufFix = cv2.imencode('.jpg', keyDraw2)
-                movingImage = ContentFile(bufMov.tobytes())
-                fixingImage = ContentFile(bufFix.tobytes())
+                # save in model opencv images
+                keyDraw1_2= reduceImage(keyDraw1)
+                keyDraw2_2= reduceImage(keyDraw2)
 
-                al.features_mov.save(f"features_{id_Project}_{alg}_moving.jpg",movingImage)
-                al.features_fix.save(f"features_{id_Project}_{alg}_fixing.jpg",fixingImage)
+                savingModel(al.features_mov, keyDraw1_2, f"features_{id_Project}_{alg}_moving.jpg")
+                savingModel(al.features_fix, keyDraw2_2, f"features_{id_Project}_{alg}_fixing.jpg")
 
-                #cv2.imwrite(f"media/img/results/{id_Project}/features_{alg}_moving.jpg", keyDraw1)
-                #cv2.imwrite(f"media/img/results/{id_Project}/features_{alg}_fixing.jpg", keyDraw2)
+                #createPyramid(f"{resultsPath}/f_mov/features_{id_Project}_{alg}_moving.jpg", f"{resultsPath}/f_mov/{id_Project}_{alg}_moving")
+                #createPyramid(f"{resultsPath}/f_fix/features_{id_Project}_{alg}_fixing.jpg", f"{resultsPath}/f_fix/{id_Project}_{alg}_fixing")
 
                 FLAN_INDEX_KDTREE = 0
                 index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
@@ -191,15 +244,13 @@ def runAlg(request):
 
                 matches = good_matches
 
+
                 lineMatch = cv2.drawMatches(img_color, keypoints, img_color2, keypoints2, matches[:50], None, flags=2)
+                lineMatch_2 = reduceImage(lineMatch)
 
-                _, bufMatch = cv2.imencode('.jpg', lineMatch)
-
-                matchingImage = ContentFile(bufMatch.tobytes())
-
-                al.line_match.save(f"lineMatch_{id_Project}_{alg}.jpg", matchingImage)
-
-                #cv2.imwrite(f"media/img/results/{id_Project}/lineMatch_{alg}.jpg", lineMatch)
+                savingModel(al.line_match, lineMatch_2, f"lineMatch_{id_Project}_{alg}.jpg")
+               # createPyramid(f"{resultsPath}/l_match/lineMatch_{id_Project}_{alg}.jpg",
+                #              f"{resultsPath}/l_match/{id_Project}_{alg}_lineMatch")
 
                 no_of_matches = len(matches)
 
@@ -216,18 +267,26 @@ def runAlg(request):
                 if no_of_matches > 3:
                     homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
                     transformed_img = cv2.warpPerspective(img_color, homography, (width, height))
-                    _, bufWarp = cv2.imencode('.jpg', transformed_img)
 
-                    warpImage = ContentFile(bufWarp.tobytes())
+                    transformed_img_2 = reduceImage(transformed_img)
 
-                    al.warping.save(f"warp_{id_Project}_{alg}.jpg", warpImage)
-
-                    #cv2.imwrite(f"media/img/results/{id_Project}/warp_{alg}.jpg", transformed_img)
+                    savingModel(al.warping, transformed_img_2, f"warp_{id_Project}_{alg}.jpg")
 
 
 
-                    img2_ori_stk = sitk.ReadImage(f"media/img/results/warp/warp_{id_Project}_{alg}.jpg")
-                    img1_stk = sitk.ReadImage("media/" + im1Name)
+                    #createPyramid(f"{resultsPath}/warp/warp_{id_Project}_{alg}.jpg",
+                     #             f"{resultsPath}/warp{id_Project}_{alg}_warp")
+
+                    transformed_rgb = cv2.cvtColor(transformed_img, cv2.COLOR_BGR2RGB)
+                    img_color2_rgb = cv2.cvtColor(img_color2, cv2.COLOR_BGR2RGB)
+
+                    img2_ori_stk = sitk.GetImageFromArray(transformed_rgb, isVector=True)
+                    img1_stk = sitk.GetImageFromArray(img_color2_rgb, isVector=True)
+
+
+                    #img1_stk = sitk.ReadImage("media/" + im1Name)
+
+
 
                     img2_ori_stk.SetSpacing([1.0, 1.0])
                     img1_stk.SetSpacing([1.0, 1.0])
@@ -237,10 +296,13 @@ def runAlg(request):
                     array = sitk.GetArrayFromImage(image_list)
                     array_rgb = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
 
-                    _, bufChess = cv2.imencode('.jpg', array_rgb)
-                    chessImage = ContentFile(bufChess.tobytes())
+                    array_rgb = reduceImage(array_rgb)
 
-                    al.chessboard.save(f"chess_{id_Project}_{alg}.jpg", chessImage)
+
+
+                    savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{alg}.jpg")
+                    #createPyramid(f"{resultsPath}/chess/chess_{id_Project}_{alg}.jpg",
+                     #             f"{resultsPath}/chess/{id_Project}_{alg}_chess")
 
 
                     res["result"].append(True)

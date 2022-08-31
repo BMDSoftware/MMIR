@@ -144,7 +144,7 @@ var viewer = OpenSeadragon({
   zoomOutButton:  "zoom_out_btn1",
   homeButton:     "home_btn1",
   fullPageButton: "full_page_btn1",
-   maxZoomLevel: 	10,
+  maxZoomLevel: 	30,
 
 
 
@@ -172,20 +172,26 @@ var viewer = OpenSeadragon({
   zoomOutButton:  "zoom_out_btn1",
   homeButton:     "home_btn1",
   fullPageButton: "full_page_btn1",
-   maxZoomLevel: 	10,
+   maxZoomLevel: 	30,
+  //prefixUrl: "/main/media/img/fixed/{{id_project}}_fix",
 
 
+  tileSources:
 
-  tileSources: {
-        type: 'image',
         {% if id_viewer == 0 %}
-            url:  '{{ fixImg.url }}',
+              '{{ fixImg }}',
         {% elif id_viewer == 1 %}
-            url:  '{{ features_fix.url }}',
+            {
+            type: 'image',
+            url: '{{ features_fix.url }}',
+            buildPyramid: false
+
+
+            }
+
         {% endif %}
 
-        buildPyramid: false
-    }
+
 });
 
 var viewer2 = OpenSeadragon({
@@ -195,19 +201,24 @@ var viewer2 = OpenSeadragon({
   zoomOutButton:  "zoom_out_btn2",
   homeButton:     "home_btn2",
   fullPageButton: "full_page_btn2",
-  maxZoomLevel: 	10,
+  maxZoomLevel: 	30,
 
 
-  tileSources: {
-        type: 'image',
+  tileSources:
+        //type: 'image',
         {% if id_viewer == 0 %}
-            url:  '{{ movImag.url }}',
+           '{{ movImag }}',
         {% elif id_viewer == 1 %}
-            url:  '{{ features_mov.url }}',
+            {
+            type: 'image',
+            url: '{{ features_mov.url }}',
+            buildPyramid: false
+
+           }
         {% endif %}
 
-        buildPyramid: false
-    }
+
+
 });
 
 {% endif %}
