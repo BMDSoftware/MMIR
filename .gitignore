@@ -19,3 +19,11 @@ main/migrations/
 
 #Images
 media/
+
+
+#test files
+test/test_files/
+
+
+#data_base
+db/

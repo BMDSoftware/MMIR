@@ -33,3 +33,13 @@ class MetricsAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_display = ('name','value')
     list_filter = ('name',)
+
+
+@admin.register(AnnotationsJson)
+class ProjectAdmin(admin.ModelAdmin):
+    search_fields = ('project', )
+    list_display = ('name_project', 'id')
+    list_filter = ('project', )
+
+    def name_project(self, obj):
+        return obj.project.name

@@ -1,5 +1,6 @@
 from django.db import models
 from main.storage import OverwriteStorage
+from jsonfield import JSONField
 
 # Create your models here.
 
@@ -38,3 +39,12 @@ class Metrics(models.Model):
 
     def __unicode__(self):
         return unicode(self.name)
+
+class AnnotationsJson(models.Model):
+  annotation = JSONField()
+  project = models.ForeignKey('Projects', on_delete=models.CASCADE)
+
+  def __unicode__(self):
+      return unicode(self.project.name + " - " + self.id)
+
+
