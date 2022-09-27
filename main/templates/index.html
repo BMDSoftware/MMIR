@@ -11,6 +11,9 @@
 <!-- use of  js -->
 <script src="{% static 'js/datatables.js' %}"></script>
 <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+<script src="{% static 'js/forms.js' %}"></script>
+<script src="{% static 'js/validation.js' %}"></script>
+
 
 <div id="msg" ></div>
 
@@ -89,24 +92,28 @@
                 <div class="margIns container ">
 
 
-                    <div class="row p-3 ">
+                    <div class="form-group row ">
                         <div class="col-md-6 offset-md-3">
-                            <div class="input-group ">
+                            <div class="input-group"  id="grpName">
                               <span class="input-group-text" id="basic-addon1">Project Name</span>
                               <input name="pName" id="pName" type="text" class="form-control" placeholder="Project Name" >
                             </div>
+                            <div id="ValidpName" ></div>
+
                         </div>
                     </div>
 
                     <div class="row p-3 ">
 
-                        <div class="col-md-6 text-center">
+                        <div class="col-md-6 text-center" id="grpfImg">
                             <label for="fImg" class="form-label ">Fixed Image</label>
                             <input id="fImg" name ="img1" class="form-control" type="file" >
+                            <div id="ValidfImg" ></div>
                         </div>
-                        <div class="col-md-6 text-center">
+                        <div class="col-md-6 text-center" id="grpmImg">
                             <label for="mImg" class="form-label">Moving Image</label>
                             <input id="mImg" name = "img2" class="form-control" type="file" >
+                            <div id="ValidmImg" ></div>
                         </div>
 
 
@@ -186,14 +193,6 @@
 
 
 <script>
-$(document).ready( function () {
-    $('#table1').DataTable();
-
-    addElements();
-
-
-
-} );
 
 algoritmLength = {{ alg|length }}
 
@@ -213,86 +212,6 @@ $( "#Algorithms" ).append( "<div id='alg0'  class='input-group mb-3' > <span cla
                                 {% endfor %}
                                 +"</select>" +
                                 " <a class='btn btn-outline-secondary'  id='less'>-</a> <a class='btn btn-outline-secondary'  id='more'>+</a></div>" );
-
-function addElements(){
-
-
-
-   $('#extraAnnInfo').empty();
-
-   var annType = $( 'input[name="annotationType"]:checked' ).attr('value')
-
-
-   if( annType == "image" | annType == "npz" ){
-
-        $( "#extraAnnInfo" ).append('<div class="row p-3 ">'+
-                                        '<div class="col-md-6 offset-md-3">'+
-                                              '<div class="input-group ">'+
-                                                  '<span class="input-group-text" id="basic-addon1">Number of classes</span>'+
-                                                  '<input name="nClasses" id="nClasses" type="number" min="1" class="form-control" >'+
-                                              '</div>'+
-                                        '</div>'+
-                                    '</div>'+
-                                    '<div id="classesNames" class="row p-3"></div>')
-
-
-        $( "#extraAnnInfo" ).append("<label for='annImage' class='form-label '>Annotation file</label>"+
-            "<input id='annImage' name ='annImage' class='form-control' type='file' >")
-
-
-
-   }else if(annType == "json"){
-
-    $( "#extraAnnInfo" ).append("<label for='annImage' class='form-label '>Annotation file</label>"+
-            "<input id='annImage' name ='annImage' class='form-control' type='file' >")
-
-   } else{
-
-
-   }
-
-
-   $("#nClasses").change(function(){
-        console.log("change nClasses")
-        $('#classesNames').empty();
-
-        var nC =  $(this).val()
-
-        console.log(nC)
-        if (nC > 0){
-
-
-            for(i=1;i<=nC;i++){
-                $( "#classesNames" ).append('<div class="col-md-6 p-1">'+
-                                                          '<div class="input-group ">'+
-                                                            '<span class="input-group-text" id="basic-addon1">Name of class '+ i +  '</span>'+
-                                                            '<input name="nameclass"'+i+' id="nameclass'+i+'" type="text" class="form-control" >'+
-                                                           '</div>'+
-                                             '</div>')
-
-            }
-
-
-
-
-
-        }
-    });
-
-
-
-};
-
-
-
-$( 'input[name="annotationType"]' ).click(function() {
-
-     addElements();
-
-
-
-});
-
 
 $( ".run" ).click(function() {
 
@@ -327,72 +246,6 @@ $( ".run" ).click(function() {
 
 });
 
-$( "#more" ).click(function() {
-   if(algoritmLength > cont+1){
-        cont= cont + 1;
-        var newId = "id='alg" + cont +"'"
-        //array for validation of the algorithms options
-        //contain all the options selected previosly for not used twice
-        let arrVal = []
-        for(i=0;i<cont;i++){
-            valSelect = $("#" + "alg" + i + " option:selected").text();
-            arrVal.push(valSelect);
-        }
-
-        //creation of new option values
-        let options = []
-        for(i = 0; i < arr.length; i++){
-            if (!(arrVal.includes(arr[i]))){
-                options.push(arr[i]);
-
-            }
-        }
-
-        let stringOptions = ""
-        for (i=0; i < options.length; i++){
-            stringOptions =  stringOptions + "<option>"+options[i]+"</option>"
-        }
-
-
-
-        $( "#Algorithms" ).append( "<div "+ newId +
-                                " class='input-group mb-3' > <span class='input-group-text' >Algorithm</span>"+
-                                " <select "+ "id='selectAl" + cont +"'"+  "name='alg" + cont +"'" +    "   class='form-select'> "+ stringOptions +"</select>" +
-                                "</div>" );
-
-        $("#less").attr("disabled",false);
-        $("#" + "selectAl" + (cont-1)).attr("disabled",true);
-
-  }else{
-    $(this).attr("disabled", true);
-  }
-
-   $("#algNum").val(cont);
-});
-
-$( "#less" ).click(function() {
-
-    if (cont > 0) {
-
-        $( "#alg"+ cont ).remove();
-        cont= cont - 1;
-        $("#" + "selectAl" + cont ).attr("disabled",false);
-        if(algoritmLength > cont+1){
-            $("#more").attr("disabled",false);
-        }
-
-    }else{
-        $(this).attr("disabled", true);
-    }
-
-    $("#algNum").val(cont);
-
-});
-
-
-$('#savingNewProject').on('submit', function() {
-    $('input, select').prop('disabled', false);
-});
 
 </script>
 
