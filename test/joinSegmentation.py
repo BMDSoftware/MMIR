@@ -81,6 +81,7 @@ for rn in references_numbers:
     cv2.imwrite(f"test_files/mucosa_8bits_{rn}.png", img_Mucosa[:,:,1])
     cv2.imwrite(f"test_files/bg_8bits_{rn}.png", img_bg[:,:,0])
     cv2.imwrite(f"test_files/crypt_8bits_{rn}.png", img_crypt[:,:,0])
+    joinimage = cv2.cvtColor(joinimage, cv2.COLOR_BGR2RGB)
     cv2.imwrite(f"test_files/join_{rn}_8bits_.png", joinimage)
 
     label_Cr_16 = label_Cr.astype(np.uint16)
@@ -103,8 +104,10 @@ for rn in references_numbers:
     cv2.imwrite(f"test_files/mucosa_16bits_{rn}.png", mucosa_16)
     cv2.imwrite(f"test_files/bg_16bits_{rn}.png", bg_16)
     cv2.imwrite(f"test_files/crypt_16bits_{rn}.png", label_Cr_16)
+    joinimage_16 = cv2.cvtColor(joinimage_16, cv2.COLOR_BGR2RGB)
     cv2.imwrite(f"test_files/join_{rn}_16bits.png", joinimage_16)
 
+    np.savez(f"test_files/join_{rn}_16bits.npz", joinimage_16 )
 
 
 

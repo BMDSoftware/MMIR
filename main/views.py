@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from main.models import *
 from main.forms import *
+from main.img2coco import seg2coco
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
 import SimpleITK as sitk
@@ -23,6 +24,16 @@ def home(request):
     return render(request, 'index.html', context)
 
 
+class MyImage:
+    def __init__(self, path):
+        self.img = cv2.imread(path,-1)
+        self.split = path.split("/")
+        self.__name = self.split[-1]
+
+    def __str__(self):
+        return self.__name
+
+
 def saveNP(request):
     dtable = Projects.objects.all().order_by('name')
     alg = Algorithms.objects.all().order_by('name')
@@ -32,6 +43,8 @@ def saveNP(request):
     if request.POST:
         if request.method == "POST":
             form =  ProjectForm(request.POST, request.FILES)
+            print("POST:  ",request.POST)
+            print("FILES: ", request.FILES)
 
             if form.is_valid():
 
@@ -41,14 +54,80 @@ def saveNP(request):
                 file = request.FILES['img1']
                 file2  =request.FILES['img2']
 
-
-                newProject = Projects(name= Pname,image1=file, image2=file2)
+                newProject = Projects(name=Pname, image1=file, image2=file2)
                 newProject.save()
 
                 createPyramid(f"media/img/fixed/{file}", f"media/img/fixed/{newProject.id}_fix")
                 createPyramid(f"media/img/moving/{file2}", f"media/img/moving/{newProject.id}_mov")
 
-                print(request.POST)
+                ### Annotations ###
+
+                annType  = request.POST['annotationType']
+
+                if annType == "image" or annType == "npz":
+                    nclass  = request.POST['nClasses']
+                    annFile  = request.FILES['annImage']
+                    classes = []
+                    for i in range(1,int(nclass)+1):
+                        nameC = request.POST['nameclass'+ str(i)]
+                        classes.append(nameC)
+
+                    if annType == "image":
+
+                        imagaPath =  annFile.temporary_file_path()
+                        img = MyImage(imagaPath)
+                        file_name = str(img)
+                        # get shape of image
+                        height, width, depth = img.img.shape
+                        image = img.img
+                    elif annType == "npz":
+                        filePath = annFile.temporary_file_path()
+                        npzfile = np.load(filePath)
+                        print(npzfile.files)
+                        image = npzfile['arr_0']
+                        split = filePath.split("/")
+                        file_name = split[-1]
+
+                        height, width, depth = image.shape
+                        print(file_name,"-" ,height,"-", width, "-",depth)
+
+                    #create the coco dictionary
+                    coco = {}
+                    coco["images"] = []
+                    coco["annotations"] = []
+                    coco["categories"] = []
+
+                    ##create categories
+                    for cindx, c in enumerate(classes):
+                        coco["categories"].append({"id": cindx + 1, "name": c})
+
+                    if depth == len(classes):
+                        ##create images in the dict
+                        # As is only one image the id used will be 1
+                        indf = 1
+                        coco["images"].append({"file_name": file_name, "height": height, "width": width, "id": indf})
+                        new_dict = seg2coco(image, classes, coco, indf)
+
+                        newAnn = AnnotationsJson(annotation=new_dict, project= newProject)
+                        newAnn.save()
+
+                    else:
+                        msg = "each channel is a class, please verify that its number of classes is the same as the depth of the image"
+
+
+                elif annType == "json":
+                    annFile  = request.FILES['annImage']
+                    jsonPath = annFile.temporary_file_path()
+                    with open(jsonPath) as json_file:
+                        new_dict = json.load(json_file)
+
+                    ##in future add a coco format validation
+                    newAnn = AnnotationsJson(annotation=new_dict, project=newProject)
+                    newAnn.save()
+
+
+
+
                 for i in range(int(algNum)+1):
                     print(i)
                     nameAlg = request.POST['alg'+ str(i)]
@@ -195,9 +274,10 @@ def runAlg(request):
                 elif (alg == "Sift+Colorinvertion"):
                     fExt = cv2.xfeatures2d.SIFT_create()
                     gray_negative = abs(255 - img2)
-                    img_flip_ud = cv2.flip(gray_negative, 1)
-                    img_color2 = cv2.flip(img_color2, 1)
-                    img2 = img_flip_ud
+                    #img_flip_ud = cv2.flip(gray_negative, 1)
+                    #img_color2 = cv2.flip(img_color2, 1)
+                    #img2 = img_flip_ud
+                    img2 = gray_negative
 
                 elif (alg == "ORB"):
 

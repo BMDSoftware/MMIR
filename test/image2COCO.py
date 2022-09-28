@@ -175,7 +175,7 @@ def main():
         coco["annotations"] = []
         coco["categories"] = []
 
-        classes = ["BG", "Mucosa", "Crypts"]
+        classes = [ "Crypts","Mucosa","BG"]
         ##create categories
         for cindx, c in enumerate(classes):
             coco["categories"].append({"id": cindx + 1, "name": c})
