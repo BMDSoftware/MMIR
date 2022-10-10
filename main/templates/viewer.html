@@ -6,6 +6,8 @@
 <div class="wrapper">
 <!-- use of  js -->
 <script src="{% static 'js/openseadragon.js' %}"></script>
+<script src="{% static 'js/fabric.adapted.js' %}"></script>
+<script src="{% static 'js/openseadragon-fabricjs-overlay.js' %}"></script>
 
 
 <!-- use of  css -->
@@ -148,20 +150,33 @@ var viewer = OpenSeadragon({
 
 
 
-  tileSources: {
-        type: 'image',
+  tileSources:
         {% if id_viewer == 2 %}
-            url:  '{{ matchingImage.url }}',
+            '{{ matchingImage}}'
         {% elif id_viewer == 3 %}
-            url:  '{{ warpImage.url }}',
+            '{{ warpImage }}'
         {% elif id_viewer == 4 %}
-            url:  '{{ chessImage.url }}',
+           '{{ chessImage }}'
         {% endif %}
 
-        buildPyramid: false
-    }
 });
 
+var options = {scale: 1000};
+var overlay = viewer.fabricjsOverlay(options);
+canvasCenter = {x:overlay.fabricCanvas().width/2,y:overlay.fabricCanvas().height/2};
+
+var compassRadius = 70;
+var circle = new fabric.Circle({
+  radius: compassRadius, fill: 'white', left: canvasCenter.x, top: canvasCenter.y, opacity: 0.9, action: 'button'
+});
+
+overlay.fabricCanvas().add(circle);
+
+overlay.fabricCanvas().renderAll();
+overlay.fabricCanvas().forEachObject(function(object){
+       object.selectable = false;
+			 object.hasControls = object.hasBorders = false;
+});
 
 
 {% else %}
@@ -181,13 +196,9 @@ var viewer = OpenSeadragon({
         {% if id_viewer == 0 %}
               '{{ fixImg }}',
         {% elif id_viewer == 1 %}
-            {
-            type: 'image',
-            url: '{{ features_fix.url }}',
-            buildPyramid: false
 
+            '{{ features_fix }}',
 
-            }
 
         {% endif %}
 
@@ -209,12 +220,9 @@ var viewer2 = OpenSeadragon({
         {% if id_viewer == 0 %}
            '{{ movImag }}',
         {% elif id_viewer == 1 %}
-            {
-            type: 'image',
-            url: '{{ features_mov.url }}',
-            buildPyramid: false
 
-           }
+           '{{ features_mov }}',
+
         {% endif %}
 
 

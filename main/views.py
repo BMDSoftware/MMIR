@@ -10,6 +10,8 @@ import numpy as np
 import pyvips
 import json
 import cv2
+import os
+import shutil
 
 
 
@@ -177,6 +179,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
     #img2 = project.image2
 
 
+
+
     context= {
                 "alg":alg,
                 "id_project":int(id_Project),
@@ -184,11 +188,11 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
                 "id_alg":id_alg,
                 "fixImg": f"/main/media/img/fixed/{project.id}_fix.dzi",
                 "movImag": f"/main/media/img/moving/{project.id}_mov.dzi",
-                "features_fix": features_fix,
-                "features_mov": features_mov,
-                "warpImage": warpImage,
-                "matchingImage": matchingImage,
-                "chessImage": chessImage
+                "features_fix": "/main/media/"+ features_fix.name[:-4]+ ".dzi",
+                "features_mov": "/main/media/"+ features_mov.name[:-4]+ ".dzi",
+                "warpImage":  "/main/media/"+ warpImage.name[:-4]+ ".dzi" ,
+                "matchingImage": "/main/media/"+ matchingImage.name[:-4]+ ".dzi" ,
+                "chessImage": "/main/media/"+ chessImage.name[:-4]+ ".dzi"
 
             }
 
@@ -207,9 +211,17 @@ def runChessboard(request):
 def savingModel(modelPar, image, strName):
     _, buf = cv2.imencode('.jpg', image)
     savingImage = ContentFile(buf.tobytes())
+
     modelPar.save(strName , savingImage)
 
 def createPyramid (cvImagePath,pyramidPath):
+
+    if os.path.exists(pyramidPath+".dzi"):
+        os.remove(pyramidPath+".dzi")
+    if os.path.exists(pyramidPath+"_files"):
+        shutil.rmtree(pyramidPath+"_files",ignore_errors=True)
+
+
 
 
     image = pyvips.Image.new_from_file(cvImagePath)
@@ -298,14 +310,15 @@ def runAlg(request):
                 #Path(f"{resultsPath}/{id_Project}/").mkdir(parents=True, exist_ok=True)
 
                 # save in model opencv images
-                keyDraw1_2= reduceImage(keyDraw1)
-                keyDraw2_2= reduceImage(keyDraw2)
+                #keyDraw1= reduceImage(keyDraw1)
+                #keyDraw2= reduceImage(keyDraw2)
 
-                savingModel(al.features_mov, keyDraw1_2, f"features_{id_Project}_{alg}_moving.jpg")
-                savingModel(al.features_fix, keyDraw2_2, f"features_{id_Project}_{alg}_fixing.jpg")
+                savingModel(al.features_mov, keyDraw1, f"features_{id_Project}_{alg}_moving.jpg")
+                savingModel(al.features_fix, keyDraw2, f"features_{id_Project}_{alg}_fixing.jpg")
 
-                #createPyramid(f"{resultsPath}/f_mov/features_{id_Project}_{alg}_moving.jpg", f"{resultsPath}/f_mov/{id_Project}_{alg}_moving")
-                #createPyramid(f"{resultsPath}/f_fix/features_{id_Project}_{alg}_fixing.jpg", f"{resultsPath}/f_fix/{id_Project}_{alg}_fixing")
+
+                createPyramid("media/" +al.features_mov.name, "media/" +al.features_mov.name[:-4])
+                createPyramid("media/" +al.features_fix.name, "media/" + al.features_fix.name[:-4])
 
                 FLAN_INDEX_KDTREE = 0
                 index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
@@ -326,11 +339,10 @@ def runAlg(request):
 
 
                 lineMatch = cv2.drawMatches(img_color, keypoints, img_color2, keypoints2, matches[:50], None, flags=2)
-                lineMatch_2 = reduceImage(lineMatch)
+                #lineMatch = reduceImage(lineMatch)
 
-                savingModel(al.line_match, lineMatch_2, f"lineMatch_{id_Project}_{alg}.jpg")
-               # createPyramid(f"{resultsPath}/l_match/lineMatch_{id_Project}_{alg}.jpg",
-                #              f"{resultsPath}/l_match/{id_Project}_{alg}_lineMatch")
+                savingModel(al.line_match, lineMatch, f"lineMatch_{id_Project}_{alg}.jpg")
+                createPyramid("media/" +al.line_match.name,"media/" +al.line_match.name[:-4])
 
                 no_of_matches = len(matches)
 
@@ -348,14 +360,13 @@ def runAlg(request):
                     homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
                     transformed_img = cv2.warpPerspective(img_color, homography, (width, height))
 
-                    transformed_img_2 = reduceImage(transformed_img)
+                    #transformed_img_2 = reduceImage(transformed_img)
 
-                    savingModel(al.warping, transformed_img_2, f"warp_{id_Project}_{alg}.jpg")
+                    savingModel(al.warping, transformed_img, f"warp_{id_Project}_{alg}.jpg")
 
 
 
-                    #createPyramid(f"{resultsPath}/warp/warp_{id_Project}_{alg}.jpg",
-                     #             f"{resultsPath}/warp{id_Project}_{alg}_warp")
+                    createPyramid("media/" +al.warping.name,"media/" +al.warping.name[:-4])
 
                     transformed_rgb = cv2.cvtColor(transformed_img, cv2.COLOR_BGR2RGB)
                     img_color2_rgb = cv2.cvtColor(img_color2, cv2.COLOR_BGR2RGB)
@@ -376,13 +387,12 @@ def runAlg(request):
                     array = sitk.GetArrayFromImage(image_list)
                     array_rgb = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
 
-                    array_rgb = reduceImage(array_rgb)
+                    #array_rgb = reduceImage(array_rgb)
 
 
 
                     savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{alg}.jpg")
-                    #createPyramid(f"{resultsPath}/chess/chess_{id_Project}_{alg}.jpg",
-                     #             f"{resultsPath}/chess/{id_Project}_{alg}_chess")
+                    createPyramid("media/" +al.chessboard.name,"media/" +al.chessboard.name[:-4])
 
 
                     res["result"].append(True)
