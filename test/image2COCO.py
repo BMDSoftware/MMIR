@@ -23,60 +23,68 @@ def seg2coco(image, classes, dict, id_image ):
     # annotation id
     idAnn = 0
 
+
     for cindx, c in enumerate(classes):
 
 
         channel = image[:,:,cindx]
         ##count every element of each class
-        instances = [ x for x in np.unique(channel) if x != 0 ]
+        #instances = [ x for x in np.unique(channel) if x != 0 ]
         #print(instances)
-        print("instances: ", len(instances))
+        #print("instances: ", len(instances))
 
-        if(len(instances)>1):
-            labeled_img = label(channel)
-        else:
-            labeled_img = channel
+        #if(len(instances)>1):
+         #
+        #else:
+        #labeled_img = channel
+        labeled_img = label(channel)
+
         regions = regionprops(labeled_img)
+        print("channel: ", cindx)
         print("regions: ",len(regions))
 
         #fig, ax = plt.subplots()
         #ax.imshow( channel.astype(np.uint8), cmap=plt.cm.gray)
 
-        for props in regions:
+        # pad mask to close contours of shapes which start and end at an edge
+        padded_binary_mask = np.pad(labeled_img, pad_width=1, mode='constant', constant_values=0)
+        contours = find_contours(padded_binary_mask, 0.5)
+        contours = np.subtract(contours, 1)
+        print("contours: ", len(contours))
+
+        for contIndx, props in enumerate(regions) :
             area = props.area
             bbox = props.bbox
             #label_p = props.label
             #if (len(instances) > 1):
 
-            # pad mask to close contours of shapes which start and end at an edge
-            padded_binary_mask = np.pad(labeled_img, pad_width=1, mode='constant', constant_values=0)
-            contours = find_contours(padded_binary_mask, 0.5)
-            contours = np.subtract(contours, 1)
-            for contour in contours:
-                contour = close_contour(contour)
-                contour = approximate_polygon(contour, 0)
-                if len(contour) < 3:
-                    continue
-                contour = np.flip(contour, axis=1)
-                #ax.plot(contour[:, 0], contour[:, 1], linewidth=2)
+
+            contour = contours[contIndx]
+            #for contour in contours:
+            contour = close_contour(contour)
+            contour = approximate_polygon(contour, 0)
+            if len(contour) < 3:
+                continue
+            contour = np.flip(contour, axis=1)
+            #ax.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
 
-                segmentation = contour.ravel().tolist()
-                # after padding and subtracting 1 we may get -0.5 points in our segmentation
-                segmentation = [0 if i < 0 else i for i in segmentation]
-                dict["annotations"].append(
-                    {
-                        "id": idAnn,
-                        "segmentation": [segmentation],
-                        "area": float(area),
-                        "bbox": [bbox[1], bbox[0], bbox[3] - bbox[1], bbox[2] - bbox[0]],
-                        "iscrowd": 0,
-                        "image_id": id_image,
-                        "category_id": cindx+1,
+            segmentation = contour.ravel().tolist()
+            # after padding and subtracting 1 we may get -0.5 points in our segmentation
+            segmentation = [0 if i < 0 else i for i in segmentation]
+            dict["annotations"].append(
+                {
+                    "id": idAnn,
+                    "segmentation": [segmentation],
+                    "area": float(area),
+                    "bbox": [bbox[1], bbox[0], bbox[3] - bbox[1], bbox[2] - bbox[0]],
+                    "iscrowd": 0,
+                    "image_id": id_image,
+                    "category_id": cindx+1,
 
-                    }
-                )
-                idAnn = idAnn + 1
+                }
+            )
+            idAnn = idAnn + 1
             #ax.axis('image')
             #ax.set_xticks([])
             #ax.set_yticks([])
@@ -135,21 +143,21 @@ def seg2coco(image, classes, dict, id_image ):
                 #    cv2.drawContours(image_copy, contour, -1,
                 #                     (np.random.randint(255), np.random.randint(255), np.random.randint(255)), 5)
                 #cv2.imwrite(f"mask_{cindx}.png", image_copy)
-        #        contour = np.flip(contour, axis=1)
-        #        #segmentation = contour.ravel().tolist()
-        #        ax.plot(contour[:, 0], contour[:, 1], linewidth=2)
-        #        # print("area: ",area, " contour_x ",contour[:, 1])
-        #        #print(segmentation)
-        #        #y, x = contour
-        #        #print(len(y), len(x) )
-        #
-        # ax.axis('image')
-        # ax.set_xticks([])
-        # ax.set_yticks([])
-        # plt.savefig(f'contour_{cindx}_.png')
+            #        contour = np.flip(contour, axis=1)
+            #        #segmentation = contour.ravel().tolist()
+            #        ax.plot(contour[:, 0], contour[:, 1], linewidth=2)
+            #        # print("area: ",area, " contour_x ",contour[:, 1])
+            #        #print(segmentation)
+            #        #y, x = contour
+            #        #print(len(y), len(x) )
+            #
+            # ax.axis('image')
+            # ax.set_xticks([])
+            # ax.set_yticks([])
+            # plt.savefig(f'contour_{cindx}_.png')
 
-        # for i in instances:
-        #     print(i)
+            # for i in instances:
+            #     print(i)
 
 
     return dict
@@ -159,6 +167,7 @@ def main():
 
 
     references_numbers = ['008', '017', '020', '021', '028']
+    #references_numbers = ['017']
     for rn in references_numbers:
         #rn="008"
         #id_image
@@ -166,6 +175,7 @@ def main():
         indf = 1
 
         img = MyImage(f"test_files/join_{rn}_16bits.png")
+        print("image: ", img)
 
         #scaled_f_down = cv2.resize(img.img, None, fx=0.2, fy=0.2, interpolation=cv2.INTER_LINEAR)
         height,width,depth = img.img.shape

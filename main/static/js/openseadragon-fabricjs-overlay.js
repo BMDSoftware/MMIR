@@ -88,7 +88,7 @@
 
         /**
          * Prevent OSD mousedown on fabric objects
-         */
+
         this._fabricCanvas.on('mouse:down', function (options) {
             if (options.target) {
                 options.e.preventDefaultAction = true;
@@ -96,10 +96,10 @@
                 options.e.stopPropagation();
             }
         });
-
+         */
         /**
          * Prevent OSD mouseup on fabric objects
-         */
+
         this._fabricCanvas.on('mouse:up', function (options) {
             if (options.target) {
                 options.e.preventDefaultAction = true;
@@ -107,6 +107,7 @@
                 options.e.stopPropagation();
             }
         });
+        */
 
         /**
          * Update viewport

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load bootstrap_icons %}
+{% load extraTags %}
 {% block content %}
 
 <div class="wrapper">
@@ -44,7 +45,25 @@
                   {% endif %}
 
               </select>
+
         </div>
+        {% if id_viewer == 0 %}
+            {% if Ncat  %}
+
+                <div class=" col-auto ">
+                <label  class="col-form-label btn active">{% bs_icon 'eye' %}/{% bs_icon 'eye-slash' %} </label>
+                </div>
+
+                {% for cat in categories %}
+                    <div class=" col-auto ">
+                         <a  id="{{cat.id}}" name="{{cat.name}}" class="sh btn btn-outline-success run" > {{cat.name}} </a>
+
+
+                    </div>
+                {% endfor %}
+
+            {% endif %}
+        {% endif %}
 
 <!--        <div class="input-group col">-->
 <!--              <span class="input-group-text" id="basic-addon3">Select Visualizer</span>-->
@@ -134,6 +153,9 @@
 
 
 <script>
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min) ) + min;
+}
 
 $('#SelectView option[value="{{id_viewer}}"]').attr("selected", "selected");
 
@@ -161,22 +183,7 @@ var viewer = OpenSeadragon({
 
 });
 
-var options = {scale: 1000};
-var overlay = viewer.fabricjsOverlay(options);
-canvasCenter = {x:overlay.fabricCanvas().width/2,y:overlay.fabricCanvas().height/2};
 
-var compassRadius = 70;
-var circle = new fabric.Circle({
-  radius: compassRadius, fill: 'white', left: canvasCenter.x, top: canvasCenter.y, opacity: 0.9, action: 'button'
-});
-
-overlay.fabricCanvas().add(circle);
-
-overlay.fabricCanvas().renderAll();
-overlay.fabricCanvas().forEachObject(function(object){
-       object.selectable = false;
-			 object.hasControls = object.hasBorders = false;
-});
 
 
 {% else %}
@@ -228,8 +235,61 @@ var viewer2 = OpenSeadragon({
 
 
 });
+{% if id_viewer == 0 %}
+    var options = {scale: {{ImWidth}}};
+    var overlay = viewer2.fabricjsOverlay(options);
+    canvasCenter = {x:overlay.fabricCanvas().width/2,y:overlay.fabricCanvas().height/2};
+
+
+    colors= []
+    for(i=0;i<{{Ncat}}; i++){
+        colors.push("rgb("+getRndInteger(0,255)+","+getRndInteger(0,255) + "," +getRndInteger(0,255)+")")
+    }
+    console.log("colors: "+ colors)
+
+    {% for p in pol %}
+        var arrPol = []
+
+
+
+
+        {% for point in p %}
+        arrPol.push({x: {{point.0}}  , y: {{point.1}} })
+
+        {% endfor %}
+
+        poligono = new fabric.Polygon(
+            arrPol,
+            {
+                left:  {{boxArr|getArrValue:forloop.counter0|getXorY:"x"}},
+                top: {{boxArr|getArrValue:forloop.counter0|getXorY:"y"}},
+                fill: colors[{{polcat|getArrValue:forloop.counter0}} - 1 ],
+                opacity: 0.8,
+                name: {{polcat|getArrValue:forloop.counter0}}
+
+            }
+        )
+        //console.log(arrPol[0]["x"] + " - " + arrPol[0]["y"])
+        //console.log(poligono)
+        overlay.fabricCanvas().add(poligono);
+        //console.log(overlay.fabricCanvas().0)
+    {% endfor %}
+
+
+
+
+    overlay.fabricCanvas().renderAll();
+    overlay.fabricCanvas().forEachObject(function(object){
+
+           object.selectable = false;
+           Object.evented =  false;
+           object.hasControls = object.hasBorders = false;
+    });
+{% endif %}
 
 {% endif %}
+
+
 
 $("#SelectAlgor").on('change', function() {
 
@@ -252,6 +312,28 @@ $("#SelectView").on('change', function() {
 
 })
 
+$( ".sh" ).click(function() {
+    value = parseInt($(this).attr('id'))
+    name = parseInt($(this).attr('name'))
+    annObjects = overlay.fabricCanvas().getObjects().filter(obj => obj.name === value);
+    annObjects.forEach(function(object){
+        if(object.visible == true){
+            object.visible  = false;
+
+
+        }else{
+            object.visible  = true;
+
+
+        }
+
+        overlay.fabricCanvas().renderAll();
+    });
+
+    console.log($(this).text())
+
+
+});
 </script>
 
 </div>

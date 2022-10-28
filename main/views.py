@@ -174,6 +174,32 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
 
     project = Projects.objects.get(id=id_Project)
     alg = Results.objects.filter(project= id_Project)
+    ann= AnnotationsJson.objects.get(project= id_Project)
+    polygons = []
+
+    if ann:
+
+        jsonDict = ann.annotation
+        arrAnn = jsonDict["annotations"]
+        Ncat=len(jsonDict["categories"])
+        categories =jsonDict["categories"]
+        ImWidth =  jsonDict["images"][0]["width"]
+
+
+        polcat =[]
+        boxArr =[]
+        for an in arrAnn:
+            seg = an["segmentation"]
+            polcat.append(an["category_id"])
+            boxArr.append(an["bbox"])
+
+            for s in seg:
+                poly = np.array(s).reshape((int(len(s) / 2), 2))
+                polygons.append(poly)
+
+
+
+
 
     #img1 = project.image1
     #img2 = project.image2
@@ -192,7 +218,13 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
                 "features_mov": "/main/media/"+ features_mov.name[:-4]+ ".dzi",
                 "warpImage":  "/main/media/"+ warpImage.name[:-4]+ ".dzi" ,
                 "matchingImage": "/main/media/"+ matchingImage.name[:-4]+ ".dzi" ,
-                "chessImage": "/main/media/"+ chessImage.name[:-4]+ ".dzi"
+                "chessImage": "/main/media/"+ chessImage.name[:-4]+ ".dzi",
+                "pol":polygons,
+                "polcat":polcat,
+                "Ncat":Ncat,
+                "ImWidth":ImWidth,
+                "boxArr":boxArr,
+                "categories": categories
 
             }
 
