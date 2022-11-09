@@ -33,6 +33,8 @@ def seg2coco(image, classes, dict, id_image ):
         regions = regionprops(labeled_img)
         print("regions: ",len(regions))
 
+       
+
         #fig, ax = plt.subplots()
         #ax.imshow( channel.astype(np.uint8), cmap=plt.cm.gray)
 

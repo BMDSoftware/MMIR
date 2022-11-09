@@ -4,6 +4,7 @@ from main.forms import *
 from main.img2coco import seg2coco
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
+from shapely.geometry import Polygon
 import SimpleITK as sitk
 from pathlib import Path
 import numpy as np
@@ -12,6 +13,7 @@ import json
 import cv2
 import os
 import shutil
+import copy
 
 
 
@@ -78,7 +80,7 @@ def saveNP(request):
 
                         imagaPath =  annFile.temporary_file_path()
                         img = MyImage(imagaPath)
-                        file_name = str(img)
+                        file_name = str(file2.name)
                         # get shape of image
                         height, width, depth = img.img.shape
                         image = img.img
@@ -179,6 +181,7 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
 
     if ann:
 
+        #jsonDict = ann.annotation_wrap
         jsonDict = ann.annotation
         arrAnn = jsonDict["annotations"]
         Ncat=len(jsonDict["categories"])
@@ -391,6 +394,8 @@ def runAlg(request):
                 if no_of_matches > 3:
                     homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
                     transformed_img = cv2.warpPerspective(img_color, homography, (width, height))
+                    #print("mask: ", mask)
+                    #print("Homography: ", homography)
 
                     #transformed_img_2 = reduceImage(transformed_img)
 
@@ -425,6 +430,75 @@ def runAlg(request):
 
                     savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{alg}.jpg")
                     createPyramid("media/" +al.chessboard.name,"media/" +al.chessboard.name[:-4])
+
+                    ##modify poligons
+
+                    ann = AnnotationsJson.objects.get(project=id_Project)
+                    if ann:
+                        jsonDict = ann.annotation
+                        arrAnn = jsonDict["annotations"]
+                        newDict = copy.deepcopy(jsonDict)
+
+                        for indxAnn, an in enumerate(arrAnn):
+                            seg = an["segmentation"]
+                            newseg = []
+                            for indxSeg, s in enumerate(seg):
+                                print("indxAnn: ", indxAnn, " indxSeg: ", indxSeg)
+                                #poly = np.array(s).reshape((int(len(s) / 2), 2))
+                                #print("poly: ", poly)
+                                #print("s: ", s)
+                                #dor product betwen homography and a matrix
+                                # x
+                                # y
+                                # 1
+                                #pol_tuplas = [(s[i],s[i+1]) for i in range(0, len(s), 2)]
+                                #print("area1: ", Polygon(pol_tuplas).area)
+
+
+                                matrixDot = [np.dot(homography, [[s[i]], [s[i + 1]], [1]]) for i in range(0, len(s), 2)]
+                                newPoli = []
+                                for i in matrixDot:
+                                    newPoli.append(float(i[0] / i[2]))
+                                    newPoli.append(float(i[1] / i[2]))
+                                pol_tuplas2 = [(newPoli[i], newPoli[i + 1]) for i in range(0, len(newPoli), 2)]
+                                #print("area2: ", Polygon(pol_tuplas2).area)
+                                newDict["annotations"][indxAnn]["area"] = Polygon(pol_tuplas2).area
+                                bounds_seg = Polygon(pol_tuplas2).bounds
+                                newDict["annotations"][indxAnn]["bbox"] = [bounds_seg[0],bounds_seg[1],bounds_seg[2]-bounds_seg[0],bounds_seg[3]-bounds_seg[1]]
+
+
+                                #print("bounds_Shap: ", Polygon(pol_tuplas2).bounds)
+
+                                newseg.append(newPoli)
+
+                                #polygons.append(poly)
+                            newDict["annotations"][indxAnn]["segmentation"] = newseg
+
+                            ## different way to get the bbox
+                            #box_coord = an["bbox"]
+                            #print("bbox1: ", box_coord)
+                            #bbox_points = [np.dot(homography, [[box_coord[0]],[box_coord[1]] , [1]]) ,  np.dot(homography, [[box_coord[0] + box_coord[2]],[box_coord[1] + box_coord[3]] , [1]]) ]
+                            #box_coord = [[float(i[0] / i[2]) , float(i[1] / i[2])]  for i in bbox_points]
+                            #newBbox = [ box_coord[0][0], box_coord[0][1], box_coord[1][0] - box_coord[0][0], box_coord[1][1] - box_coord[0][1]]
+                            #print("bbox2: ", newBbox)
+
+
+
+                            #newAnn.append(an)
+
+                        #jsonDict["annotations"] = newAnn
+                        #jsonDict["bbox"] = newBbox
+
+
+
+                        #change this section for batch (now is only for one image)
+                        newDict["images"] = [{"file_name": im1Name, "height": height , "width": width, "id": 1}]
+
+                        #print(jsonDict["annotations"])
+
+                        ann.annotation_wrap = newDict
+                        ann.save()
+
 
 
                     res["result"].append(True)

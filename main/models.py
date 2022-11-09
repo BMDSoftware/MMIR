@@ -41,7 +41,8 @@ class Metrics(models.Model):
         return unicode(self.name)
 
 class AnnotationsJson(models.Model):
-  annotation = JSONField()
+  annotation = JSONField(default ={})
+  annotation_wrap = JSONField(default ={})
   project = models.ForeignKey('Projects', on_delete=models.CASCADE)
 
   def __unicode__(self):
