@@ -153,9 +153,25 @@ def saveNP(request):
     return render(request, 'index.html', context)
 
 
+def getPoligonInfo(AnnArray):
+    polygons = []
+    polcat = []
+    bboxArr = []
+    for an in AnnArray:
+        seg = an["segmentation"]
+        polcat.append(an["category_id"])
+        bboxArr.append(an["bbox"])
 
+
+        for s in seg:
+            poly = np.array(s).reshape((int(len(s) / 2), 2))
+            polygons.append(poly)
+
+    return polcat, polygons, bboxArr
 
 def viewer(request,id_Project, id_viewer=0, id_alg="None"):
+
+    project = Projects.objects.get(id=id_Project)
 
     if id_alg != "None":
         id_alg = int(id_alg)
@@ -167,69 +183,110 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
         chessImage =  res.chessboard
 
 
+        fixImg = f"/main/media/img/fixed/{project.id}_fix.dzi"
+        movImag = f"/main/media/img/moving/{project.id}_mov.dzi"
+        if features_fix:
+            features_fix = "/main/media/" + features_fix.name[:-4] + ".dzi"
+        if features_mov:
+            features_mov = "/main/media/" + features_mov.name[:-4] + ".dzi"
+        if warpImage:
+            warpImage = "/main/media/" + warpImage.name[:-4] + ".dzi"
+        if matchingImage:
+            matchingImage =  "/main/media/" + matchingImage.name[:-4] + ".dzi"
+        if chessImage:
+            chessImage =  "/main/media/" + chessImage.name[:-4] + ".dzi"
+
+
     else:
-        features_fix = None
-        features_mov = None
-        warpImage = None
-        matchingImage = None
-        chessImage = None
+        features_fix = ""
+        features_mov = ""
+        warpImage = ""
+        matchingImage = ""
+        chessImage = ""
 
-    project = Projects.objects.get(id=id_Project)
+
     alg = Results.objects.filter(project= id_Project)
-    ann= AnnotationsJson.objects.get(project= id_Project)
-    polygons = []
+    ann= AnnotationsJson.objects.filter(project= id_Project)
 
+
+    ## verify annotations
     if ann:
 
+        categories = []
+        ImWidth = 0
+        ImWidthWrap = 0
+        Ncat = 0
+        polygons_mov = []
+        polcat_mov = []
+        boxArr_mov = []
+        polygons_fix = []
+        polcat_fix = []
+        boxArr_fix = []
+
         #jsonDict = ann.annotation_wrap
-        jsonDict = ann.annotation
-        arrAnn = jsonDict["annotations"]
-        Ncat=len(jsonDict["categories"])
-        categories =jsonDict["categories"]
-        ImWidth =  jsonDict["images"][0]["width"]
+        jsonDict = ann[0].annotation
+        jsonDictWrap = ann[0].annotation_wrap
 
+        if jsonDict:
+            Ncat = len(jsonDict["categories"])
+            categories = jsonDict["categories"]
 
-        polcat =[]
-        boxArr =[]
-        for an in arrAnn:
-            seg = an["segmentation"]
-            polcat.append(an["category_id"])
-            boxArr.append(an["bbox"])
-
-            for s in seg:
-                poly = np.array(s).reshape((int(len(s) / 2), 2))
-                polygons.append(poly)
+            arrAnn = jsonDict["annotations"]
+            ImWidth =  jsonDict["images"][0]["width"]
+            polcat_mov, polygons_mov, boxArr_mov = getPoligonInfo(arrAnn)
+            #print(polcat_mov)
 
 
 
+        if jsonDictWrap:
+            ImWidthWrap =  jsonDictWrap["images"][0]["width"]
+            arrAnnWrap = jsonDictWrap["annotations"]
 
+            polcat_fix, polygons_fix, boxArr_fix = getPoligonInfo(arrAnnWrap)
+
+        context = {
+            "alg": alg,
+            "id_project": int(id_Project),
+            "id_viewer": int(id_viewer),
+            "id_alg": id_alg,
+            "fixImg": fixImg,
+            "movImag": movImag,
+            "features_fix": features_fix,
+            "features_mov": features_mov,
+            "warpImage": warpImage,
+            "matchingImage": matchingImage,
+            "chessImage": chessImage,
+            "pol": polygons_mov,
+            "polcat": polcat_mov,
+            "Ncat": Ncat,
+            "ImWidth": ImWidth,
+            "ImWidthWrap": ImWidthWrap,
+            "boxArr": boxArr_mov,
+            "categories": categories,
+            "pol_fix": polygons_fix,
+            "polcat_fix": polcat_fix,
+            "boxAr_fix": boxArr_fix,
+
+        }
 
     #img1 = project.image1
     #img2 = project.image2
+    else:
+        context = {
+            "alg": alg,
+            "id_project": int(id_Project),
+            "id_viewer": int(id_viewer),
+            "id_alg": id_alg,
+            "fixImg": fixImg,
+            "movImag": movImag,
+            "features_fix": features_fix,
+            "features_mov": features_mov,
+            "warpImage": warpImage,
+            "matchingImage": matchingImage,
+            "chessImage": chessImage,
 
+        }
 
-
-
-    context= {
-                "alg":alg,
-                "id_project":int(id_Project),
-                "id_viewer":int(id_viewer),
-                "id_alg":id_alg,
-                "fixImg": f"/main/media/img/fixed/{project.id}_fix.dzi",
-                "movImag": f"/main/media/img/moving/{project.id}_mov.dzi",
-                "features_fix": "/main/media/"+ features_fix.name[:-4]+ ".dzi",
-                "features_mov": "/main/media/"+ features_mov.name[:-4]+ ".dzi",
-                "warpImage":  "/main/media/"+ warpImage.name[:-4]+ ".dzi" ,
-                "matchingImage": "/main/media/"+ matchingImage.name[:-4]+ ".dzi" ,
-                "chessImage": "/main/media/"+ chessImage.name[:-4]+ ".dzi",
-                "pol":polygons,
-                "polcat":polcat,
-                "Ncat":Ncat,
-                "ImWidth":ImWidth,
-                "boxArr":boxArr,
-                "categories": categories
-
-            }
 
     return render(request, 'viewer.html', context)
 

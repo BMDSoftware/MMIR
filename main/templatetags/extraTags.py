@@ -7,7 +7,10 @@ register = template.Library()
 def getFirstAlg(project_id):
     algorithms = Results.objects.filter(project=project_id)
 
-    return algorithms[0].algorithm.id
+    if algorithms:
+        return algorithms[0].algorithm.id
+    else:
+        return "None"
 
 @register.filter(name='getArrValue')
 def getArrValue(arr,index):
@@ -19,3 +22,11 @@ def getXorY(arr,eval):
         return arr[0]
     else:
         return arr[1]
+
+@register.filter(name='getMod')
+def getMod(val1,val2):
+    res =  val1 % val2
+    if res == 0:
+        return True
+    else:
+        return False

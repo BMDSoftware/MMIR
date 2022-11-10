@@ -31,23 +31,26 @@
               <span class="input-group-text" id="basic-addon2">Select viewer</span>
               <select name="SelectView" id="SelectView" class="form-control"  >
                   <option value="0" selected>Original Images</option>
-                  {% if features_fix and features_mov  %}
+                  {% if features_fix != "" and features_mov != ""  %}
                   <option value="1" >Feature Extraction</option>
                   {% endif %}
-                  {% if matchingImage  %}
+                  {% if matchingImage != "" %}
                   <option value="2" >Matching lines</option>
                   {% endif %}
-                  {% if warpImage  %}
+                  {% if warpImage != ""  %}
                   <option value="3" >Warping Image</option>
                   {% endif %}
-                  {% if chessImage %}
+                  {% if chessImage != "" %}
                   <option value="4" >Chess Board</option>
+                  {% endif %}
+                  {% if Ncat %}
+                  <option value="5" >Annotations</option>
                   {% endif %}
 
               </select>
 
         </div>
-        {% if id_viewer == 0 %}
+        {% if id_viewer == 5 %}
             {% if Ncat  %}
 
                 <div class=" col-auto ">
@@ -87,7 +90,7 @@
 
     <div class="row " style="flex:2; display: flex;">
 
-        {% if id_viewer > 1 %}
+        {% if id_viewer > 1 and  id_viewer < 5 %}
 
         <div class="col " style=" flex: 1 1 ;  min-height: 100%;">
 
@@ -159,7 +162,7 @@ function getRndInteger(min, max) {
 
 $('#SelectView option[value="{{id_viewer}}"]').attr("selected", "selected");
 
-{% if id_viewer > 1 %}
+{% if id_viewer > 1 and id_viewer < 5%}
 
 var viewer = OpenSeadragon({
   id: "seadragon-viewer",
@@ -200,7 +203,7 @@ var viewer = OpenSeadragon({
 
   tileSources:
 
-        {% if id_viewer == 0 %}
+        {% if id_viewer == 0 or id_viewer == 5 %}
               '{{ fixImg }}',
         {% elif id_viewer == 1 %}
 
@@ -224,7 +227,7 @@ var viewer2 = OpenSeadragon({
 
   tileSources:
         //type: 'image',
-        {% if id_viewer == 0 %}
+        {% if id_viewer == 0 or id_viewer == 5 %}
            '{{ movImag }}',
         {% elif id_viewer == 1 %}
 
@@ -235,9 +238,12 @@ var viewer2 = OpenSeadragon({
 
 
 });
-{% if id_viewer == 0 %}
+{% if id_viewer == 5 %}
     var options = {scale: {{ImWidth}}};
+    var optionsWrap = {scale: {{ImWidthWrap}}};
+
     var overlay = viewer2.fabricjsOverlay(options);
+    var overlayWrap = viewer.fabricjsOverlay(optionsWrap);
     //canvasCenter = {x:overlay.fabricCanvas().width/2,y:overlay.fabricCanvas().height/2};
 
 
@@ -250,11 +256,13 @@ var viewer2 = OpenSeadragon({
     {% for p in pol %}
         var arrPol = []
 
-
-
-
         {% for point in p %}
-        arrPol.push({x: {{point.0}}  , y: {{point.1}} })
+
+        //reduce the number of dots in 10
+        {% if forloop.counter|getMod:10 %}
+
+            arrPol.push({x: {{point.0}}  , y: {{point.1}} })
+        {% endif %}
 
         {% endfor %}
 
@@ -275,7 +283,37 @@ var viewer2 = OpenSeadragon({
         //console.log(overlay.fabricCanvas().0)
     {% endfor %}
 
+    {% for p in pol_fix %}
+        var arrPolWrap = []
 
+
+
+
+        {% for point in p %}
+
+            {% if forloop.counter|getMod:10 %}
+
+            arrPolWrap.push({x: {{point.0}}  , y: {{point.1}} })
+            {% endif %}
+
+        {% endfor %}
+
+        poligonoWrap = new fabric.Polygon(
+            arrPolWrap,
+            {
+                left:  {{boxAr_fix|getArrValue:forloop.counter0|getXorY:"x"}},
+                top: {{boxAr_fix|getArrValue:forloop.counter0|getXorY:"y"}},
+                fill: colors[{{polcat_fix|getArrValue:forloop.counter0}} - 1 ],
+                opacity: 0.8,
+                name: {{polcat_fix|getArrValue:forloop.counter0}}
+
+            }
+        )
+        //console.log(arrPol[0]["x"] + " - " + arrPol[0]["y"])
+        //console.log(poligono)
+        overlayWrap.fabricCanvas().add(poligonoWrap);
+        //console.log(overlay.fabricCanvas().0)
+    {% endfor %}
 
 
     overlay.fabricCanvas().renderAll();
@@ -285,6 +323,15 @@ var viewer2 = OpenSeadragon({
            Object.evented =  false;
            object.hasControls = object.hasBorders = false;
     });
+
+    overlayWrap.fabricCanvas().renderAll();
+    overlayWrap.fabricCanvas().forEachObject(function(object){
+
+           object.selectable = false;
+           Object.evented =  false;
+           object.hasControls = object.hasBorders = false;
+    });
+
 {% endif %}
 
 {% endif %}
@@ -330,7 +377,22 @@ $( ".sh" ).click(function() {
         overlay.fabricCanvas().renderAll();
     });
 
-    console.log($(this).text())
+    annObjectsWrap = overlayWrap.fabricCanvas().getObjects().filter(obj => obj.name === value);
+    annObjectsWrap.forEach(function(object){
+        if(object.visible == true){
+            object.visible  = false;
+
+
+        }else{
+            object.visible  = true;
+
+
+        }
+
+        overlayWrap.fabricCanvas().renderAll();
+    });
+
+    //console.log($(this).text())
 
 
 });
