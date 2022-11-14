@@ -29,19 +29,19 @@ def seg2coco(image, classes, dict, id_image ):
 
         channel = image[:,:,cindx]
         ##count every element of each class
-        #instances = [ x for x in np.unique(channel) if x != 0 ]
+        instances = [ x for x in np.unique(channel) if x != 0 ]
         #print(instances)
         #print("instances: ", len(instances))
 
-        #if(len(instances)>1):
-         #
-        #else:
+        if(len(instances)>1):
+            labeled_img = label(channel)
+        else:
         #labeled_img = channel
-        labeled_img = label(channel)
+            labeled_img = label(channel)
 
-        regions = regionprops(labeled_img)
+        #regions = regionprops(labeled_img)
         print("channel: ", cindx)
-        print("regions: ",len(regions))
+        #print("regions: ",len(regions))
 
         #fig, ax = plt.subplots()
         #ax.imshow( channel.astype(np.uint8), cmap=plt.cm.gray)
@@ -52,19 +52,34 @@ def seg2coco(image, classes, dict, id_image ):
         contours = np.subtract(contours, 1)
         print("contours: ", len(contours))
 
-        for contIndx, props in enumerate(regions) :
-            area = props.area
-            bbox = props.bbox
+        for contour in contours :
+
+
             #label_p = props.label
             #if (len(instances) > 1):
 
 
-            contour = contours[contIndx]
+#            contour = contours[contIndx]
             #for contour in contours:
             contour = close_contour(contour)
             contour = approximate_polygon(contour, 0)
             if len(contour) < 3:
                 continue
+
+            Ymin = int(np.min(contour[:, 0]))
+            Ymax = int(np.max(contour[:, 0]))
+            Xmin = int(np.min(contour[:, 1]))
+            Xmax = int(np.max(contour[:, 1]))
+
+            # area = props.area
+            c = np.expand_dims(contour.astype(np.float32), 1)
+            c = cv2.UMat(c)
+            area = cv2.contourArea(c)
+
+
+            # bbox = props.bbox
+            bbox = [Xmin, Ymin, Xmax - Xmin, Ymax - Ymin]
+
             contour = np.flip(contour, axis=1)
             #ax.plot(contour[:, 0], contour[:, 1], linewidth=2)
 
@@ -77,7 +92,8 @@ def seg2coco(image, classes, dict, id_image ):
                     "id": idAnn,
                     "segmentation": [segmentation],
                     "area": float(area),
-                    "bbox": [bbox[1], bbox[0], bbox[3] - bbox[1], bbox[2] - bbox[0]],
+                    #"bbox": [bbox[1], bbox[0], bbox[3] - bbox[1], bbox[2] - bbox[0]],
+                    "bbox": bbox,
                     "iscrowd": 0,
                     "image_id": id_image,
                     "category_id": cindx+1,
@@ -88,7 +104,7 @@ def seg2coco(image, classes, dict, id_image ):
             #ax.axis('image')
             #ax.set_xticks([])
             #ax.set_yticks([])
-            #plt.savefig(f'contour_{cindx}_.png')
+            #plt.savefig(f'contour_{cindx}_new.png')
 
                 #_, mask = cv2.threshold( np.asarray(labeled_img, dtype="uint8") , 127, 1, cv2.THRESH_BINARY )
                 #temp = (mask == 0)
@@ -167,7 +183,7 @@ def main():
 
 
     references_numbers = ['008', '017', '020', '021', '028']
-    #references_numbers = ['017']
+    #references_numbers = ['008']
     for rn in references_numbers:
         #rn="008"
         #id_image
@@ -198,7 +214,7 @@ def main():
             #new_dict = seg2coco(scaled_f_down, classes, coco, indf)
             json_string = json.dumps(new_dict)
             with open(f'test_files/json_coco_{rn}_{indf}.json', 'w') as outfile:
-                outfile.write(json_string)
+               outfile.write(json_string)
             #print(new_dict)
         else:
             print("each channel is a class, please verify that its number of classes is the same as the depth of the image")

@@ -1,5 +1,6 @@
 from django import template
 from main.models import *
+import math
 
 register = template.Library()
 
@@ -25,6 +26,8 @@ def getXorY(arr,eval):
 
 @register.filter(name='getMod')
 def getMod(val1,val2):
+    #number_of_points = len(arrayPoints)
+    #factor = math.ceil(number_of_points / 100)
     res =  val1 % val2
     if res == 0:
         return True

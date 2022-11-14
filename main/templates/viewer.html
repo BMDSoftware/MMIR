@@ -257,12 +257,20 @@ var viewer2 = OpenSeadragon({
         var arrPol = []
 
         {% for point in p %}
+            {% if forloop.first %}
+                number_of_points = {{forloop.revcounter}}
+                factor = Math.floor(number_of_points/100)
+                console.log(factor)
+            {% endif %}
 
-        //reduce the number of dots in 10
-        {% if forloop.counter|getMod:10 %}
 
-            arrPol.push({x: {{point.0}}  , y: {{point.1}} })
-        {% endif %}
+            //reduce the number of dots in 20
+            {% if forloop.counter|getMod:20 %}
+
+                arrPol.push({x: {{point.0}}  , y: {{point.1}} })
+            {% endif %}
+
+
 
         {% endfor %}
 
@@ -291,10 +299,12 @@ var viewer2 = OpenSeadragon({
 
         {% for point in p %}
 
-            {% if forloop.counter|getMod:10 %}
+            {% if forloop.counter|getMod:20 %}
 
-            arrPolWrap.push({x: {{point.0}}  , y: {{point.1}} })
+                arrPolWrap.push({x: {{point.0}}  , y: {{point.1}} })
             {% endif %}
+
+
 
         {% endfor %}
 
