@@ -167,6 +167,8 @@ $(document).ready(function () {
                 ValidateFile('#annImage', "#grpannImage", '#ValidannImage', "json");
 
             }
+
+
     });
 
 
