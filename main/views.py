@@ -225,7 +225,7 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
 
         #jsonDict = ann.annotation_wrap
         jsonDict = ann[0].annotation
-        jsonDictWrap = ann[0].annotation_wrap
+        jsonDictWrap = res.annotation_wrap
 
         if jsonDict:
             Ncat = len(jsonDict["categories"])
@@ -339,7 +339,9 @@ def reduceImage(img):
     resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
     return resized
 
-
+def eraseProject(request):
+    data = {}
+    return JsonResponse(data)
 
 
 def runAlg(request):
@@ -483,8 +485,6 @@ def runAlg(request):
 
                     #array_rgb = reduceImage(array_rgb)
 
-
-
                     savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{alg}.jpg")
                     createPyramid("media/" +al.chessboard.name,"media/" +al.chessboard.name[:-4])
 
@@ -553,8 +553,8 @@ def runAlg(request):
 
                         #print(jsonDict["annotations"])
 
-                        ann.annotation_wrap = newDict
-                        ann.save()
+                        al.annotation_wrap = newDict
+                        al.save()
 
 
 

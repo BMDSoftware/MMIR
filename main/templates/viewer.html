@@ -162,6 +162,8 @@ function getRndInteger(min, max) {
 
 $('#SelectView option[value="{{id_viewer}}"]').attr("selected", "selected");
 
+$('#SelectAlgor option[value="{{id_alg}}"]').attr("selected", "selected");
+
 {% if id_viewer > 1 and id_viewer < 5%}
 
 var viewer = OpenSeadragon({
@@ -350,7 +352,6 @@ var viewer2 = OpenSeadragon({
 
 $("#SelectAlgor").on('change', function() {
 
-    alert( this.value );
     val= this.value
     viewer_id = $("#SelectView").val();
     url = "{% url 'home:viewer' id_project  %}";

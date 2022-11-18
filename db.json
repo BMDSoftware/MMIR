@@ -1,0 +1,16 @@
+[
+{
+  "model": "main.algorithms",
+  "pk": 1,
+  "fields": {
+    "name": "Sift+Colorinvertion"
+  }
+},
+{
+  "model": "main.algorithms",
+  "pk": 2,
+  "fields": {
+    "name": "Sift"
+  }
+}
+]
