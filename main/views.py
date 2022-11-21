@@ -339,9 +339,86 @@ def reduceImage(img):
     resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
     return resized
 
-def eraseProject(request):
-    data = {}
-    return JsonResponse(data)
+
+def deleteProject(request,id_Project):
+    msg = ""
+    success = False
+    if request.POST:
+        if request.method == "POST":
+
+            #try:
+            #id_Project = request.POST['pId']
+            id_Project = str(id_Project)
+            project = Projects.objects.get(id=id_Project)
+            results = Results.objects.filter(project=id_Project)
+            annotations = AnnotationsJson.objects.filter(project=id_Project)
+            ImageMediaF = "media/img/"
+            pathsFolder = [ImageMediaF + "fixed/" + id_Project + "_fix_files",
+                           ImageMediaF + "moving/" + id_Project + "_mov_files"
+                           ]
+
+
+            pathsFiles = [ImageMediaF + "fixed/" + id_Project + "_fix.dzi",
+                          ImageMediaF + "moving/" + id_Project + "_mov.dzi",
+                          "media/" + project.image1.name,
+                          "media/" + project.image2.name,
+                          ]
+
+            # append path for every algorithm
+            if results:
+                for r in results:
+                    pathsFolder.append("media/" + r.features_mov.name[:-4] + "_files")
+                    pathsFolder.append("media/" + r.features_fix.name[:-4] + "_files")
+                    pathsFolder.append("media/" + r.warping.name[:-4] + "_files")
+                    pathsFolder.append("media/" + r.line_match.name[:-4] + "_files")
+                    pathsFolder.append("media/" + r.chessboard.name[:-4] + "_files")
+
+                    if(r.features_mov.name):
+                        pathsFiles.append("media/" + r.features_mov.name[:-4] + ".dzi")
+                        pathsFiles.append("media/" + r.features_mov.name)
+                    if (r.features_fix.name):
+                        pathsFiles.append("media/" + r.features_fix.name[:-4] + ".dzi")
+                        pathsFiles.append("media/" + r.features_fix.name)
+                    if (r.warping.name):
+                        pathsFiles.append("media/" + r.warping.name[:-4] + ".dzi")
+                        pathsFiles.append("media/" + r.warping.name)
+                    if (r.line_match.name):
+                        pathsFiles.append("media/" + r.line_match.name[:-4] + ".dzi")
+                        pathsFiles.append("media/" + r.line_match.name)
+                    if (r.chessboard.name):
+                        pathsFiles.append("media/" + r.chessboard.name[:-4] + ".dzi")
+                        pathsFiles.append("media/" + r.chessboard.name)
+
+            for p in pathsFolder:
+                if os.path.exists(p):
+                    shutil.rmtree(p)
+
+            for pf in pathsFiles:
+                if os.path.exists(pf):
+                    os.remove(pf)
+
+            annotations.delete()
+            results.delete()
+            project.delete()
+
+            success =  True
+            msg = "the project was successfully removed"
+
+            #except:
+
+             #   data["success"] = False
+            # msg = "the project was not successfully removed, please refresh the web page and try again"
+
+    dtable = Projects.objects.all().order_by('name')
+    alg = Algorithms.objects.all().order_by('name')
+
+    context = {'dtable': dtable,
+               'alg': alg,
+               "msg": msg,
+               "success":success
+               }
+
+    return render(request, 'index.html', context)
 
 
 def runAlg(request):
@@ -490,9 +567,9 @@ def runAlg(request):
 
                     ##modify poligons
 
-                    ann = AnnotationsJson.objects.get(project=id_Project)
+                    ann = AnnotationsJson.objects.filter(project=id_Project)
                     if ann:
-                        jsonDict = ann.annotation
+                        jsonDict = ann[0].annotation
                         arrAnn = jsonDict["annotations"]
                         newDict = copy.deepcopy(jsonDict)
 

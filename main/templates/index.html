@@ -71,7 +71,7 @@
                                                 {% bs_icon 'eye' %}
 
                                             </a>
-                                            <button data-bs-whatever="{{d.id}}" type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#areYouSure"  >
+                                            <button data-bs-proName="{{d.name}}" data-bs-proId="{{d.id}}" type="button" class="btn btn-outline-danger" data-bs-toggle="modal"  data-bs-target="#areYouSure"  >
                                                 {% bs_icon 'trash' %}
                                             </button>
 
@@ -219,7 +219,10 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary">Accept</button>
+        <form id="formDel" action="#" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+            <button id="acceptDelete" type="submit" class="btn btn-primary">Accept</button>
+        </form>
       </div>
     </div>
   </div>
@@ -227,14 +230,7 @@
 
 <script>
 
-$(document).on("click", ".open-areYouSure", function () {
-     var Id = $(this).data('id');
-     alert(Id)
-     $(".modal-body #bookId").val( Id );
-     // As pointed out in comments,
-     // it is unnecessary to have to manually call the modal.
-     // $('#addBookDialog').modal('show');
-});
+
 
 
 var deleteModal = document.getElementById('areYouSure')
@@ -242,19 +238,62 @@ deleteModal.addEventListener('show.bs.modal', function (event) {
   // Button that triggered the modal
   var button = event.relatedTarget
   // Extract info from data-bs-* attributes
-  var recipient = button.getAttribute('data-bs-whatever')
-  // If necessary, you could initiate an AJAX request here
-  // and then do the updating in a callback.
-  //
-  // Update the modal's content.
+  var recipient = button.getAttribute('data-bs-proName')
+  var Pro_id = button.getAttribute('data-bs-proId')
+  $("#formDel").attr("action","{% url 'home:home' %}"+"deleteProject/" + Pro_id)
 
-  $( "#msgDeleteModal" ).text("Are you sure you want to delete" + recipient +" project?")
 
-    console.log("entro")
-    console.log(recipient)
+
+
+  $( "#msgDeleteModal" ).text("Are you sure you want to delete " + recipient +" project?")
+
+  $("#acceptDelete").attr("idPDel", Pro_id);
 
 })
 
+<!-- $("#acceptDelete").click(function(){-->
+<!--   var idPr2del = $(this).attr("idPDel")-->
+<!--    crf = document.getElementsByName('csrfmiddlewaretoken')[0].value;-->
+<!--   $.ajax({-->
+<!--        type: 'POST',-->
+<!--        url: "{% url 'home:home' %}",-->
+<!--        data: jQuery.param({ csrfmiddlewaretoken: crf, pId: idPr2del }) ,-->
+<!--        success: function (data) {-->
+<!--             if (data) {-->
+<!--                 var obj = JSON.stringify(data);-->
+<!--                 obj = JSON.parse(obj);-->
+
+<!--                 console.log(obj)-->
+
+<!--                 if(obj.success){-->
+<!--                    $( "#msg" ).addClass( "alert alert-success" );-->
+<!--                    $( "#msg" ).text("the project " + idPr2del + " was successfully removed");-->
+<!--                 }else{-->
+<!--                    $( "#msg" ).addClass( "alert alert-danger" );-->
+<!--                    $( "#msg" ).text("the project " + idPr2del + " was not successfully removed, please refresh the web page and try again");-->
+<!--                 }-->
+
+
+
+<!--             }-->
+
+<!--        },-->
+<!--        error: function (data) {-->
+<!--            $( "#msg" ).addClass( "alert alert-danger" );-->
+<!--            $( "#msg" ).text("the project " + idPr2del + " was not successfully removed, please refresh the web page and try again");-->
+<!--        }-->
+<!--    })-->
+<!--  });-->
+
+{% if msg %}
+    {% if success %}
+        $( "#msg" ).addClass( "alert alert-success" );
+    {% else %}
+        $( "#msg" ).addClass( "alert alert-danger");
+    {% endif %}
+
+    $( "#msg" ).text("{{msg}}");
+{% endif %}
 
 algoritmLength = {{ alg|length }}
 
