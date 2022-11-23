@@ -26,15 +26,6 @@ class ResultAdmin(admin.ModelAdmin):
     def name_algorithm(self, obj):
         return obj.algorithm.name
 
-
-
-@admin.register(Metrics)
-class MetricsAdmin(admin.ModelAdmin):
-    search_fields = ('name',)
-    list_display = ('name','value')
-    list_filter = ('name',)
-
-
 @admin.register(AnnotationsJson)
 class ProjectAdmin(admin.ModelAdmin):
     search_fields = ('project', )

@@ -16,10 +16,17 @@ def seg2coco(image, classes, dict, id_image ):
     # annotation id
     idAnn = 0
 
+    dim = image.shape
+    #if is binary image
+
+
     for cindx, c in enumerate(classes):
 
+        if len(dim) == 2:
+            channel = image[:, :]
+        else:
+            channel = image[:,:,cindx]
 
-        channel = image[:,:,cindx]
         ##count every element of each class
         instances = [ x for x in np.unique(channel) if x != 0 ]
         #print(instances)

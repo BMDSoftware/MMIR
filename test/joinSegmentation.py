@@ -31,6 +31,7 @@ for rn in references_numbers:
     img_erosion = cv2.erode(img_crypt, kernel, iterations=1)
     img_crypt = cv2.dilate(img_erosion, kernel, iterations=1)
 
+    #label_Cr = label(img_crypt[:,:,0])
     label_Cr = label(img_crypt[:,:,0])
     #regionsCr = regionprops(label_Cr)
 
@@ -84,7 +85,8 @@ for rn in references_numbers:
     joinimage = cv2.cvtColor(joinimage, cv2.COLOR_BGR2RGB)
     cv2.imwrite(f"test_files/join_{rn}_8bits_.png", joinimage)
 
-    label_Cr_16 = label_Cr.astype(np.uint16)
+    #label_Cr_16 = label_Cr.astype(np.uint16)
+    label_Cr_16 = (img_crypt[:,:,1].astype(np.uint16))*257
     mucosa_16 = (img_Mucosa[:,:,1].astype(np.uint16))*257
     bg_16 = (img_bg[:,:,0].astype(np.uint16))*257
 

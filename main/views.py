@@ -82,7 +82,13 @@ def saveNP(request):
                         img = MyImage(imagaPath)
                         file_name = str(file2.name)
                         # get shape of image
-                        height, width, depth = img.img.shape
+                        dimensions = img.img.shape
+                        if len(dimensions) > 2:
+                            height, width, depth = dimensions
+                        # if is a binary image
+                        elif len(dimensions) == 2 :
+                            height, width= dimensions
+                            depth = 1
                         image = img.img
                     elif annType == "npz":
                         filePath = annFile.temporary_file_path()
@@ -92,7 +98,12 @@ def saveNP(request):
                         split = filePath.split("/")
                         file_name = split[-1]
 
-                        height, width, depth = image.shape
+                        dimensions = img.img.shape
+                        if len(dimensions) > 2:
+                            height, width, depth = dimensions
+                        elif len(dimensions) == 2:
+                            height, width = dimensions
+                            depth = 1
                         print(file_name,"-" ,height,"-", width, "-",depth)
 
                     #create the coco dictionary
@@ -104,6 +115,8 @@ def saveNP(request):
                     ##create categories
                     for cindx, c in enumerate(classes):
                         coco["categories"].append({"id": cindx + 1, "name": c})
+
+
 
                     if depth == len(classes):
                         ##create images in the dict
@@ -495,8 +508,10 @@ def runAlg(request):
                 index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
                 search_params = dict(checks=1000)
 
-                flann = cv2.FlannBasedMatcher(index_params, search_params)
-                matches = flann.knnMatch(descriptors, descriptors2, k=5)
+                #flann = cv2.FlannBasedMatcher(index_params, search_params)
+                flann = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_FLANNBASED)
+
+                matches = flann.knnMatch(descriptors, descriptors2, k=8)
 
                 good_matches = []
 

@@ -33,14 +33,6 @@ class Results(models.Model):
         return unicode(self.project.name +  " - " + self.algorithm.name )
 
 
-class Metrics(models.Model):
-    name = models.CharField(max_length=255,null=True)
-    value = models.DecimalField(max_digits=6, decimal_places=3,null=True)
-    results = models.ForeignKey('Results', on_delete=models.CASCADE)
-
-    def __unicode__(self):
-        return unicode(self.name)
-
 class AnnotationsJson(models.Model):
   annotation = JSONField(default ={})
   project = models.ForeignKey('Projects', on_delete=models.CASCADE)

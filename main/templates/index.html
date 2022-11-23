@@ -18,7 +18,7 @@
 <div id="msg" ></div>
 
 <div  id=pb class="progress">
-   <div  class="progress-bar progress-bar-striped progress-bar-animated " role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
+   <div  class="progress-bar progress-bar-striped progress-bar-animated " role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
    Loading ...
    </div>
 </div>
@@ -145,7 +145,7 @@
                                         <div class="col-md-3 form-check text-start">
                                             <input class="form-check-input" type="radio" name="annotationType" id="ImageAnn" checked="checked"  value="image">
                                               <label class="form-check-label " for="ImageAnn">
-                                                Image(RGB)
+                                                Image(RGB or Binary)
                                               </label>
                                         </div>
                                          <div class="col-md-2 form-check text-start">
@@ -230,7 +230,7 @@
 
 <script>
 
-
+$( "#pb" ).hide();
 
 
 var deleteModal = document.getElementById('areYouSure')
@@ -314,8 +314,13 @@ $( "#Algorithms" ).append( "<div id='alg0'  class='input-group mb-3' > <span cla
                                 +"</select>" +
                                 " <a class='btn btn-outline-secondary'  id='less'>-</a> <a class='btn btn-outline-secondary'  id='more'>+</a></div>" );
 
-$( ".run" ).click(function() {
 
+$( "#saveProj" ).click(function() {
+    $( "#pb" ).show();
+});
+
+$( ".run" ).click(function() {
+    $( "#pb" ).show();
     projectId = $(this).attr('name')
     crf = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     $("#msg").removeClass();
@@ -334,6 +339,7 @@ $( ".run" ).click(function() {
 
                  $( "#msg" ).addClass( "alert alert-success" );
                  $( "#msg" ).text("the algorithms were successfully executed");
+                 $( "#pb" ).hide();
 
 
              }
@@ -342,6 +348,7 @@ $( ".run" ).click(function() {
         error: function (data) {
             $( "#msg" ).addClass( "alert alert-danger" );
             $( "#msg" ).text("the algorithms were not successfully executed, please check in the visualizer if at least 4 matches was founded");
+            $( "#pb" ).hide();
         }
     })
 
