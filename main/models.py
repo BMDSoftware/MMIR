@@ -24,6 +24,8 @@ class Results(models.Model):
     features_fix = models.ImageField(max_length=255,storage=OverwriteStorage(),upload_to='img/results/f_fix/', blank=True)
     line_match = models.ImageField(max_length=255,storage=OverwriteStorage(), upload_to='img/results/l_match/', blank=True)
     chessboard = models.ImageField(max_length=255,storage=OverwriteStorage(), upload_to='img/results/chess/', blank=True)
+    x_chessboard = models.PositiveSmallIntegerField(default=4)
+    y_chessboard = models.PositiveSmallIntegerField(default=4)
     annotation_wrap = JSONField(default={})
 
     algorithm = models.ForeignKey('Algorithms', on_delete=models.CASCADE)

@@ -12,6 +12,7 @@ urlpatterns = [
     re_path(r'^viewer/(?P<id_Project>[0-9]\d*)/(?P<id_viewer>[0-9]\d*)/(?P<id_alg>.+$)', views.viewer, name='viewer'),
     path('viewer/<int:id_Project>', views.viewer, name='viewer'),
     path('runAlg/', views.runAlg, name='runAlg'),
+    path('dynamicChessboard/', views.dynamicChessboard, name='dynamicChessboard'),
     path('deleteProject/<int:id_Project>', views.deleteProject, name='deleteProject'),
 
     #re_path(r'^about/$', views.historial, name =  'about'),

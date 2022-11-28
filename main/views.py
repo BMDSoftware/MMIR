@@ -15,7 +15,7 @@ import os
 import shutil
 import copy
 
-
+pyvips.cache_set_max(0)
 
 # Create your views here.
 def home(request):
@@ -194,6 +194,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
         warpImage = res.warping
         matchingImage = res.line_match
         chessImage =  res.chessboard
+        x_val = res.x_chessboard
+        y_val = res.y_chessboard
 
 
         fixImg = f"/main/media/img/fixed/{project.id}_fix.dzi"
@@ -216,6 +218,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
         warpImage = ""
         matchingImage = ""
         chessImage = ""
+        x_val = ""
+        y_val = ""
 
 
     alg = Results.objects.filter(project= id_Project)
@@ -279,6 +283,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
             "pol_fix": polygons_fix,
             "polcat_fix": polcat_fix,
             "boxAr_fix": boxArr_fix,
+            "x_val": x_val,
+            "y_val": y_val
 
         }
 
@@ -297,6 +303,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
             "warpImage": warpImage,
             "matchingImage": matchingImage,
             "chessImage": chessImage,
+            "x_val": x_val,
+            "y_val": y_val
 
         }
 
@@ -323,11 +331,9 @@ def createPyramid (cvImagePath,pyramidPath):
 
     if os.path.exists(pyramidPath+".dzi"):
         os.remove(pyramidPath+".dzi")
+
     if os.path.exists(pyramidPath+"_files"):
         shutil.rmtree(pyramidPath+"_files",ignore_errors=True)
-
-
-
 
     image = pyvips.Image.new_from_file(cvImagePath)
     folderName = pyramidPath.split("/")
@@ -341,6 +347,7 @@ def createPyramid (cvImagePath,pyramidPath):
         depth="onepixel",
         properties=False
     )
+
 
 def reduceImage(img):
     height, width, _ = img.shape
@@ -432,6 +439,61 @@ def deleteProject(request,id_Project):
                }
 
     return render(request, 'index.html', context)
+
+def dynamicChessboard(request):
+
+    data = {"success":False}
+
+    if request.GET:
+        if request.method == "GET":
+            newX = int(request.GET['newX'])
+            newY = int(request.GET['newY'])
+            id_alg = int(request.GET['id_alg'])
+            id_proj = int(request.GET['id_project'])
+
+            result = Results.objects.get(project=id_proj, algorithm=id_alg)
+
+            wrapping = result.warping.name
+            project = Projects.objects.get(id=id_proj)
+            fix_path = project.image1.name
+
+            wrapping_img  = cv2.imread("media/" + wrapping)
+            fix_image = cv2.imread("media/" + fix_path)
+
+            ##fix
+            transformed_rgb = cv2.cvtColor(wrapping_img, cv2.COLOR_BGR2RGB)
+            img_color2_rgb = cv2.cvtColor(fix_image, cv2.COLOR_BGR2RGB)
+
+            img2_ori_stk = sitk.GetImageFromArray(transformed_rgb, isVector=True)
+            img1_stk = sitk.GetImageFromArray(img_color2_rgb, isVector=True)
+
+            # img1_stk = sitk.ReadImage("media/" + im1Name)
+
+            img2_ori_stk.SetSpacing([1.0, 1.0])
+            img1_stk.SetSpacing([1.0, 1.0])
+
+            image_list = sitk.CheckerBoard(img2_ori_stk, img1_stk, [newX, newY, newY])
+            ##convert itk to array
+            array = sitk.GetArrayFromImage(image_list)
+            array_rgb = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
+
+            savingModel(result.chessboard, array_rgb, f"chess_{id_proj}_{result.algorithm.name}.jpg")
+
+
+            #createPyramid("media/" + al.chessboard.name, "media/" + al.chessboard.name[:-4])
+
+            result.x_chessboard = newX
+            result.y_chessboard = newY
+
+            result.save()
+            createPyramid("media/" + result.chessboard.name, "media/" + result.chessboard.name[:-4])
+            data = {"success": True}
+
+
+
+
+
+    return JsonResponse(data)
 
 
 def runAlg(request):
@@ -579,6 +641,7 @@ def runAlg(request):
 
                     savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{alg}.jpg")
                     createPyramid("media/" +al.chessboard.name,"media/" +al.chessboard.name[:-4])
+
 
                     ##modify poligons
 
