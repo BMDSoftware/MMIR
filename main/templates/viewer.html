@@ -107,12 +107,6 @@
 </div>
 
 
-
-
-
-
-
-
     <div class="row " style="flex:2; display: flex;">
 
         {% if id_viewer > 1 and  id_viewer < 5 %}
@@ -172,14 +166,6 @@
 
 
 
-
-
-
-
-
-
-
-
 <script>
 $( "#pb" ).hide();
 function getRndInteger(min, max) {
@@ -212,11 +198,17 @@ $("#XRange , #YRange").on("change", function() {
         data: jQuery.param({  newX: Xval, newY: Yval, id_alg:{{id_alg}}, id_project:{{id_project}} }) ,
         success: function (data) {
              if (data) {
-                 var obj = JSON.stringify(data);
-                 obj = JSON.parse(obj);
+                 //var obj = JSON.stringify(data);
+                 //obj = JSON.parse(obj);
 
-                 console.log(obj)
-                 location.reload();
+                 //console.log(obj)
+                 //window.applicationCache.swapCache();
+                 //viewer.world.resetItems();
+                 //window.applicationCache.swapCache();
+                 //viewer.imageLoader.clear();
+                 //viewer.world.update();
+
+                 location.reload(true);
 
 
              }
