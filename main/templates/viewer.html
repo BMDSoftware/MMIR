@@ -57,18 +57,25 @@
         {% if id_viewer == 5 %}
             {% if Ncat  %}
 
-                <div class=" col-auto ">
-                <label  class="col-form-label btn active">{% bs_icon 'eye' %}/{% bs_icon 'eye-slash' %} </label>
-                </div>
 
-                {% for cat in categories %}
-                    <div class=" col-auto ">
-                         <a  id="{{cat.id}}" name="{{cat.name}}" class="sh btn btn-outline-success run" > {{cat.name}} </a>
+                <div class="container p-1">
+                    <div class="row ">
+                        {% for cat in categories %}
+                            <div class="col alert alert-dark  p-1 m-0">
+                                <center>
+                                         <label  class="col-form-label"> {{cat.name}}:  </label>
+                                        <div   class="btn-group" role="group" id="group_{{cat.id}}" class=" col-auto ">
+
+                                             <a  id="{{cat.id}}" name="{{cat.name}}" class="sh btn btn-outline-secondary  run" > {% bs_icon 'eye' %}/{% bs_icon 'eye-slash' %} </a>
+                                             <input  name="{{cat.id}}" class="form-control form-control-color p-0 border border-secondary btn_Color"  type="color" id="{{cat.id}}_color" name="favcolor" value="#ff0000">
 
 
+                                        </div>
+                                </center>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
-
+                 </div>
             {% endif %}
         {% endif %}
 
@@ -167,10 +174,21 @@
 
 
 <script>
+
+
+
+
+
+
+function rgbToHex(r,g,b) {
+
+    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+}
+
 $( "#pb" ).hide();
 function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min) ) + min;
-}
+};
 
 $("#XRange").on("input", function() {
     xval = this.value
@@ -209,7 +227,6 @@ $("#XRange , #YRange").on("change", function() {
                  //viewer.world.update();
 
                  location.reload(true);
-
 
              }
 
@@ -314,8 +331,20 @@ var viewer2 = OpenSeadragon({
 
     colors= []
     for(i=0;i<{{Ncat}}; i++){
-        colors.push("rgb("+getRndInteger(0,255)+","+getRndInteger(0,255) + "," +getRndInteger(0,255)+")")
+        r = getRndInteger(0,255)
+        g = getRndInteger(0,255)
+        b = getRndInteger(0,255)
+
+        colors.push("rgb("+r+","+g + "," +b+")")
+        hexColor = rgbToHex(r,g,b)
+        $("#"+ (i+1) +"_color").val(hexColor);
+
+
     }
+
+
+
+
 
 
     {% for p in pol %}
@@ -338,6 +367,8 @@ var viewer2 = OpenSeadragon({
 
 
         {% endfor %}
+
+
 
         poligono = new fabric.Polygon(
             arrPol,
@@ -436,6 +467,7 @@ $("#SelectView").on('change', function() {
 $( ".sh" ).click(function() {
     value = parseInt($(this).attr('id'))
     name = parseInt($(this).attr('name'))
+
     annObjects = overlay.fabricCanvas().getObjects().filter(obj => obj.name === value);
     annObjects.forEach(function(object){
         if(object.visible == true){
@@ -470,6 +502,34 @@ $( ".sh" ).click(function() {
 
 
 });
+
+$(".btn_Color").on("change", function() {
+    colVal =  this.value
+    console.log(colVal)
+    value = parseInt($(this).attr('name'))
+
+    annObjectsWrap = overlayWrap.fabricCanvas().getObjects().filter(obj => obj.name === value);
+    annObjects = overlay.fabricCanvas().getObjects().filter(obj => obj.name === value);
+
+
+
+
+    annObjectsWrap.forEach(function(object){
+        console.log(object.fill)
+        object.set("fill", colVal);
+        console.log(object.fill)
+        overlayWrap.fabricCanvas().renderAll();
+    });
+
+    annObjects.forEach(function(object){
+        object.set("fill", colVal);
+        overlay.fabricCanvas().renderAll();
+    });
+
+});
+
+
+
 </script>
 
 </div>
