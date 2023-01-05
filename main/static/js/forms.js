@@ -38,7 +38,31 @@ $(document).ready( function () {
     });
 
 
+    $( 'input[name="registrationType"]' ).click(function() {
+        var regType = $( 'input[name="registrationType"]:checked' ).attr('value')
+        if (regType == "sreg" ){
 
+            $('#fImg').removeAttr('webkitdirectory');
+            $('#fImg').removeAttr('directory');
+            $('#fImg').removeAttr('multiple');
+
+            $('#mImg').removeAttr('webkitdirectory');
+            $('#mImg').removeAttr('directory');
+            $('#mImg').removeAttr('multiple');
+
+        }else{
+            $('#fImg').attr('webkitdirectory','');
+            $('#fImg').attr('directory','');
+            $('#fImg').attr('multiple','');
+
+            $('#mImg').attr('webkitdirectory','');
+            $('#mImg').attr('directory','');
+            $('#mImg').attr('multiple','');
+
+        }
+
+
+    });
 
     $( "#more" ).click(function() {
        if(algoritmLength > cont+1){

@@ -2,16 +2,30 @@ from django.db import models
 from main.storage import OverwriteStorage
 from jsonfield import JSONField
 
+
 # Create your models here.
 
+def image_fix_path(instance, filename):
+    return  'img/fixed/{0}/{1}'.format(instance.project.id, filename)
+
+def image_mov_path(instance, filename):
+    return  'img/moving/{0}/{1}'.format(instance.project.id, filename)
 
 class Projects(models.Model):
     name = models.CharField(max_length=255, null=True)
-    image1 = models.ImageField(upload_to='img/fixed/')
-    image2 = models.ImageField(upload_to='img/moving/')
+    #image1 = models.ImageField(upload_to='img/fixed/')
+    #image2 = models.ImageField(upload_to='img/moving/')
 
     def __unicode__(self):
         return unicode(self.name)
+
+class Fix_Images(models.Model):
+    project = models.ForeignKey('Projects', on_delete=models.CASCADE)
+    image1 = models.ImageField(upload_to=image_fix_path)
+
+class mov_Images(models.Model):
+    project = models.ForeignKey('Projects', on_delete=models.CASCADE)
+    image2 = models.ImageField(upload_to=image_mov_path)
 
 class Algorithms(models.Model):
     name = models.CharField(max_length=255, null=True)

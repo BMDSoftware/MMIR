@@ -2,6 +2,17 @@ from django.contrib import admin
 from .models import *
 # Register your models here.
 
+@admin.register(Fix_Images)
+class Fix_ImagesAdmin(admin.ModelAdmin):
+    search_fields = ('project',)
+    list_display = ('project',)
+    list_filter = ('project',)
+
+@admin.register(mov_Images)
+class mov_ImagesAdmin(admin.ModelAdmin):
+    search_fields = ('project',)
+    list_display = ('project',)
+    list_filter = ('project',)
 
 @admin.register(Projects)
 class ProjectAdmin(admin.ModelAdmin):
@@ -27,7 +38,7 @@ class ResultAdmin(admin.ModelAdmin):
         return obj.algorithm.name
 
 @admin.register(AnnotationsJson)
-class ProjectAdmin(admin.ModelAdmin):
+class AnnotationsJsonAdmin(admin.ModelAdmin):
     search_fields = ('project', )
     list_display = ('name_project', 'id')
     list_filter = ('project', )
