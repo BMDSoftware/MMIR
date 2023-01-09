@@ -73,101 +73,97 @@ def saveNP(request):
                         NewMovImage.save()
                         createPyramid(f"media/img/moving/{newProject.id}/{fileMov}", f"media/img/moving/{newProject.id}/{NewMovImage.id}_mov")
 
+                    ### Annotations ###
 
+                    annType  = request.POST['annotationType']
+
+                    if annType == "image" or annType == "npz":
+                        nclass = request.POST['nClasses']
+                        annList = request.FILES.getlist('annImage')
+                        classes = []
+                        for i in range(1, int(nclass) + 1):
+                             nameC = request.POST['nameclass'+ str(i)]
+                             classes.append(nameC)
+                        # create the coco dictionary
+                        coco = {}
+                        coco["images"] = []
+                        coco["annotations"] = []
+                        coco["categories"] = []
+
+                        ##create categories
+                        for cindx, c in enumerate(classes):
+                            coco["categories"].append({"id": cindx + 1, "name": c})
+
+                        # annotation id
+                        idAnn = 0
+
+                        for i in range(len(annList)):
+                            if annType == "image":
+                                fileMov = MovList[i]
+                                annFile = annList[i]
+
+                                imagaPath =  annFile.temporary_file_path()
+                                img = MyImage(imagaPath)
+                                file_name = str(fileMov.name)
+                                # get shape of image
+                                dimensions = img.img.shape
+                                if len(dimensions) > 2:
+                                    height, width, depth = dimensions
+                                # if is a binary image
+                                elif len(dimensions) == 2 :
+                                    height, width= dimensions
+                                    depth = 1
+                                image = img.img
+                            elif annType == "npz":
+
+                                annFile = annList[i]
+                                filePath = annFile.temporary_file_path()
+                                npzfile = np.load(filePath)
+                                print(npzfile.files)
+                                image = npzfile['arr_0']
+                                split = filePath.split("/")
+                                file_name = split[-1]
+
+                                dimensions = img.img.shape
+                                if len(dimensions) > 2:
+                                    height, width, depth = dimensions
+                                elif len(dimensions) == 2:
+                                    height, width = dimensions
+                                    depth = 1
+                                print(file_name,"-" ,height,"-", width, "-",depth)
+
+                            if depth == len(classes):
+                                ##create images in the dict
+                                # image id
+                                indf = i + 1
+                                coco["images"].append({"file_name": file_name, "height": height, "width": width, "id": indf})
+
+                                coco, idAnn = seg2coco(image, classes, coco, indf, idAnn)
+                                saveAnn = True
+
+                            else:
+                                msg = "each channel is a class, please verify that its number of classes is the same as the depth of the image"
+                                saveAnn = False
+
+
+                        if saveAnn:
+                            newAnn = AnnotationsJson(annotation=coco, project=newProject)
+                            newAnn.save()
+
+                    elif annType == "json":
+                        annFile  = request.FILES['annImage']
+                        jsonPath = annFile.temporary_file_path()
+                        with open(jsonPath) as json_file:
+                            new_dict = json.load(json_file)
+
+                        ##in future add a coco format validation
+                        newAnn = AnnotationsJson(annotation=new_dict, project=newProject)
+                        newAnn.save()
 
                 else:
                     msg = "Moving and Fix Folder must have the same number of files."
 
 
-                #
-                # ### Annotations ###
-                #
-                # annType  = request.POST['annotationType']
-                #
-                # if annType == "image" or annType == "npz":
-                #     nclass  = request.POST['nClasses']
-                #     annFile  = request.FILES['annImage']
-                #     classes = []
-                #     for i in range(1,int(nclass)+1):
-                #         nameC = request.POST['nameclass'+ str(i)]
-                #         classes.append(nameC)
-                #
-                #     if annType == "image":
-                #
-                #         imagaPath =  annFile.temporary_file_path()
-                #         img = MyImage(imagaPath)
-                #         file_name = str(file2.name)
-                #         # get shape of image
-                #         dimensions = img.img.shape
-                #         if len(dimensions) > 2:
-                #             height, width, depth = dimensions
-                #         # if is a binary image
-                #         elif len(dimensions) == 2 :
-                #             height, width= dimensions
-                #             depth = 1
-                #         image = img.img
-                #     elif annType == "npz":
-                #         filePath = annFile.temporary_file_path()
-                #         npzfile = np.load(filePath)
-                #         print(npzfile.files)
-                #         image = npzfile['arr_0']
-                #         split = filePath.split("/")
-                #         file_name = split[-1]
-                #
-                #         dimensions = img.img.shape
-                #         if len(dimensions) > 2:
-                #             height, width, depth = dimensions
-                #         elif len(dimensions) == 2:
-                #             height, width = dimensions
-                #             depth = 1
-                #         print(file_name,"-" ,height,"-", width, "-",depth)
-                #
-                #     #create the coco dictionary
-                #     coco = {}
-                #     coco["images"] = []
-                #     coco["annotations"] = []
-                #     coco["categories"] = []
-                #
-                #     ##create categories
-                #     for cindx, c in enumerate(classes):
-                #         coco["categories"].append({"id": cindx + 1, "name": c})
-                #
-                #
-                #
-                #     if depth == len(classes):
-                #         ##create images in the dict
-                #         # As is only one image the id used will be 1
-                #         indf = 1
-                #         coco["images"].append({"file_name": file_name, "height": height, "width": width, "id": indf})
-                #         new_dict = seg2coco(image, classes, coco, indf)
-                #
-                #         newAnn = AnnotationsJson(annotation=new_dict, project= newProject)
-                #         newAnn.save()
-                #
-                #     else:
-                #         msg = "each channel is a class, please verify that its number of classes is the same as the depth of the image"
-                #
-                #
-                # elif annType == "json":
-                #     annFile  = request.FILES['annImage']
-                #     jsonPath = annFile.temporary_file_path()
-                #     with open(jsonPath) as json_file:
-                #         new_dict = json.load(json_file)
-                #
-                #     ##in future add a coco format validation
-                #     newAnn = AnnotationsJson(annotation=new_dict, project=newProject)
-                #     newAnn.save()
-                #
-                #
-                #
-                #
-                # for i in range(int(algNum)+1):
-                #     print(i)
-                #     nameAlg = request.POST['alg'+ str(i)]
-                #     al = Algorithms.objects.get(name=nameAlg)
-                #     newResult = Results(algorithm=al, project= newProject)
-                #
-                #     newResult.save()
 
 
             else:

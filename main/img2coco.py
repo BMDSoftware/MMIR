@@ -12,9 +12,8 @@ def close_contour(contour):
 
 
 
-def seg2coco(image, classes, dict, id_image ):
-    # annotation id
-    idAnn = 0
+def seg2coco(image, classes, dict, id_image, idAnn ):
+
 
     dim = image.shape
     #if is binary image
@@ -98,5 +97,5 @@ def seg2coco(image, classes, dict, id_image ):
             )
             idAnn = idAnn + 1
 
-    return dict
+    return dict, idAnn
 

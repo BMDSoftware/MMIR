@@ -46,9 +46,15 @@ $(document).ready( function () {
             $('#fImg').removeAttr('directory');
             $('#fImg').removeAttr('multiple');
 
+
+
             $('#mImg').removeAttr('webkitdirectory');
             $('#mImg').removeAttr('directory');
             $('#mImg').removeAttr('multiple');
+
+            $('#annImage').removeAttr('webkitdirectory');
+            $('#annImage').removeAttr('directory');
+            $('#annImage').removeAttr('multiple');
 
         }else{
             $('#fImg').attr('webkitdirectory','');
@@ -58,6 +64,10 @@ $(document).ready( function () {
             $('#mImg').attr('webkitdirectory','');
             $('#mImg').attr('directory','');
             $('#mImg').attr('multiple','');
+
+            $('#annImage').attr('webkitdirectory','');
+            $('#annImage').attr('directory','');
+            $('#annImage').attr('multiple','');
 
         }
 
@@ -189,25 +199,39 @@ $(document).ready( function () {
 
 
        if( annType == "image" | annType == "npz" ){
-
             $( "#extraAnnInfo" ).append('<div class="row p-3 ">'+
-                                            '<div class="col-md-6 offset-md-3" id="grpnClasses">'+
-                                                  '<div class="input-group ">'+
-                                                      '<span class="input-group-text" id="basic-addon1">Number of classes</span>'+
-                                                      '<input name="nClasses" id="nClasses" type="number" min="1" class="form-control" value="1">'+
-                                                  '</div>'+
-                                                  '<div id="ValidnClasses" ></div>'+
+                                                '<div class="col-md-6 offset-md-3" id="grpnClasses">'+
+                                                      '<div class="input-group ">'+
+                                                          '<span class="input-group-text" id="basic-addon1">Number of classes</span>'+
+                                                          '<input name="nClasses" id="nClasses" type="number" min="1" class="form-control" value="1">'+
+                                                      '</div>'+
+                                                      '<div id="ValidnClasses" ></div>'+
+                                                '</div>'+
                                             '</div>'+
-                                        '</div>'+
-                                        '<div id="classesNames" class="row p-3"></div>')
+                                            '<div id="classesNames" class="row p-3"></div>')
+
+            var regType = $( 'input[name="registrationType"]:checked' ).attr('value')
+            if (regType == "sreg" ){
 
 
-            $( "#extraAnnInfo" ).append('<div id="grpannImage">'+
-                "<label for='annImage' class='form-label '>Annotation file</label>"+
-                "<input id='annImage' name ='annImage' class='form-control' type='file' >"+
-                '<div id="ValidannImage" ></div>'+
-                '</div>')
 
+
+                $( "#extraAnnInfo" ).append('<div id="grpannImage">'+
+                    "<label for='annImage' class='form-label '>Annotation</label>"+
+                    "<input id='annImage' name ='annImage' class='form-control' type='file' >"+
+                    '<div id="ValidannImage" ></div>'+
+                    '</div>')
+            }else{
+
+
+
+                $( "#extraAnnInfo" ).append('<div id="grpannImage">'+
+                    "<label for='annImage' class='form-label '>Annotation</label>"+
+                    "<input id='annImage' name ='annImage' class='form-control' type='file' webkitdirectory directory multiple>"+
+                    '<div id="ValidannImage" ></div>'+
+                    '</div>')
+
+            }
             addClassName();
 
 
@@ -215,7 +239,7 @@ $(document).ready( function () {
        }else if(annType == "json"){
 
         $( "#extraAnnInfo" ).append('<div id="grpannImage">'+
-                "<label for='annImage' class='form-label '>Annotation file</label>"+
+                "<label for='annImage' class='form-label '>Annotation</label>"+
                 "<input id='annImage' name ='annImage' class='form-control' type='file' >"+
                 '<div id="ValidannImage" ></div>'+
                 '</div>')
