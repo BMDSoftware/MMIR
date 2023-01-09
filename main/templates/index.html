@@ -68,7 +68,7 @@
                                         <td style = "text-align: center;" > {{d.name}}</td>
                                         <td style = "text-align: center;" >
                                             <a  name="{{d.id}}" class="btn btn-outline-success run" > {% bs_icon 'play-fill' %}</a>
-                                            <a class="btn btn-outline-success" href="{% url 'home:viewer' 0 d.id d.id|getFirstFiles  d.id|getFirstAlg %}">
+                                            <a class="btn btn-outline-success" href="{% url 'home:viewer'  d.id 0 d.id|getFirstFiles  d.id|getFirstAlg %}">
                                                 {% bs_icon 'eye' %}
 
                                             </a>

@@ -214,7 +214,7 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
 
     if id_alg != "None":
         id_alg = int(id_alg)
-        res = Results.objects.get(project=id_Project, algorithm=id_alg)
+        res = Results.objects.get(Registration_Images=reg_img, algorithm=id_alg)
         features_fix = res.features_fix
         features_mov = res.features_mov
         warpImage = res.warping
@@ -248,7 +248,8 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
         y_val = ""
 
 
-    alg = Results.objects.filter(project= id_Project)
+    alg = Results.objects.filter(Registration_Images=reg_img)
+    reg_batch = Registration_Images.objects.filter(project= project)
     ann= AnnotationsJson.objects.filter(project= id_Project)
 
 
@@ -290,6 +291,8 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
         context = {
             "alg": alg,
             "id_project": int(id_Project),
+            "id_reg_img": id_reg_img,
+            "reg_batch":reg_batch,
             "id_viewer": int(id_viewer),
             "id_alg": id_alg,
             "fixImg": fixImg,
@@ -320,6 +323,8 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
         context = {
             "alg": alg,
             "id_project": int(id_Project),
+            "id_reg_img":id_reg_img,
+            "reg_batch": reg_batch,
             "id_viewer": int(id_viewer),
             "id_alg": id_alg,
             "fixImg": fixImg,

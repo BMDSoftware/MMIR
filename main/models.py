@@ -38,6 +38,8 @@ class Registration_Images(models.Model):
     project = models.ForeignKey('Projects', on_delete=models.CASCADE)
     image1 = models.ImageField(upload_to=image_fix_path)
     image2 = models.ImageField(upload_to=image_mov_path)
+    def __unicode__(self):
+        return unicode(self.project.name)
 
 
 class Algorithms(models.Model):

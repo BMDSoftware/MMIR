@@ -22,6 +22,18 @@
 <div class="col-md-12 " style="background-color: #c9c9c9">
 <div  class="container padIns">
     <div class="row align-items-center ">
+
+        <div class="input-group col ">
+              <span class="input-group-text" id="basic-addon0">Select Files</span>
+              <select name="SelectFiles" id="SelectFiles" class="form-control"  >
+                  {% for reg in reg_batch %}
+                    <option value="{{reg.id}}">{{reg.image1.name|getNameFile}} - {{reg.image2.name|getNameFile}} </option>
+                  {% endfor %}
+              </select>
+        </div>
+
+
+
         <div class="input-group col ">
               <span class="input-group-text" id="basic-addon1">Select Algorithms</span>
               <select name="SelectAlgor" id="SelectAlgor" class="form-control"  >
@@ -244,6 +256,8 @@ $('#SelectView option[value="{{id_viewer}}"]').attr("selected", "selected");
 
 $('#SelectAlgor option[value="{{id_alg}}"]').attr("selected", "selected");
 
+$('#SelectFiles option[value="{{id_reg_img}}"]').attr("selected", "selected");
+
 {% if id_viewer > 1 and id_viewer < 5%}
 
 var viewer = OpenSeadragon({
@@ -448,8 +462,9 @@ $("#SelectAlgor").on('change', function() {
 
     val= this.value
     viewer_id = $("#SelectView").val();
+    File_id = $("#SelectFiles").val();
     url = "{% url 'home:viewer' id_project  %}";
-    document.location.href = url + "/"+ viewer_id + "/"+ val;
+    document.location.href = url + "/"+ viewer_id + "/"+ File_id + "/" +val;
 
 
 })
@@ -457,9 +472,20 @@ $("#SelectAlgor").on('change', function() {
 $("#SelectView").on('change', function() {
     val= this.value
     alg_id = $("#SelectAlgor").val();
+    File_id = $("#SelectFiles").val();
     url = "{% url 'home:viewer' id_project  %}";
-    document.location.href = url + "/"+ val + "/" + alg_id;
+    document.location.href = url + "/"+ val + "/" + File_id + "/" + alg_id;
 
+})
+
+
+$("#SelectFiles").on('change', function() {
+
+    val= this.value
+    viewer_id = $("#SelectView").val();
+    alg_id = $("#SelectAlgor").val();
+    url = "{% url 'home:viewer' id_project  %}";
+    document.location.href = url + "/"+ viewer_id + "/"+ val + "/" + alg_id;
 
 
 })

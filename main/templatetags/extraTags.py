@@ -4,6 +4,15 @@ import math
 
 register = template.Library()
 
+@register.filter(name='getNameFile')
+def getNameFile(str):
+    split = str.split("/")
+    file_name = split[-1]
+
+    return file_name[0:-4]
+
+
+
 @register.filter(name='getFirstAlg')
 def getFirstAlg(project_id):
     algorithms = Results.objects.filter(Registration_Images__project=project_id)
