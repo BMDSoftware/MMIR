@@ -2,17 +2,12 @@ from django.contrib import admin
 from .models import *
 # Register your models here.
 
-@admin.register(Fix_Images)
-class Fix_ImagesAdmin(admin.ModelAdmin):
+@admin.register(Registration_Images)
+class Registration_ImagesAdmin(admin.ModelAdmin):
     search_fields = ('project',)
     list_display = ('project',)
     list_filter = ('project',)
 
-@admin.register(mov_Images)
-class mov_ImagesAdmin(admin.ModelAdmin):
-    search_fields = ('project',)
-    list_display = ('project',)
-    list_filter = ('project',)
 
 @admin.register(Projects)
 class ProjectAdmin(admin.ModelAdmin):
@@ -28,14 +23,14 @@ class AlgorithmAdmin(admin.ModelAdmin):
 
 @admin.register(Results)
 class ResultAdmin(admin.ModelAdmin):
-    search_fields = ('project','algorithm')
+    search_fields = ('Registration_Images','algorithm')
     list_display = ('name_project','name_algorithm')
-    list_filter = ('project','algorithm')
+    list_filter = ('Registration_Images','algorithm')
 
     def name_project(self, obj):
-        return obj.project.name
+        return obj.Registration_Images.project.name
     def name_algorithm(self, obj):
-        return obj.algorithm.name
+        return obj.Registration_Images.project.name
 
 @admin.register(AnnotationsJson)
 class AnnotationsJsonAdmin(admin.ModelAdmin):

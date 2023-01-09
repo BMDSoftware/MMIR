@@ -6,10 +6,19 @@ register = template.Library()
 
 @register.filter(name='getFirstAlg')
 def getFirstAlg(project_id):
-    algorithms = Results.objects.filter(project=project_id)
+    algorithms = Results.objects.filter(Registration_Images__project=project_id)
 
     if algorithms:
         return algorithms[0].algorithm.id
+    else:
+        return "None"
+
+@register.filter(name='getFirstFiles')
+def getFirstFiles(project_id):
+    res = Registration_Images.objects.filter(project=project_id)
+
+    if res:
+        return res[0].id
     else:
         return "None"
 

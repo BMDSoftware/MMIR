@@ -64,14 +64,20 @@ def saveNP(request):
                 if len(FixList) == len(MovList):
                     for i in range(len(FixList)):
                         fileFix = FixList[i]
-                        NewFixImage = Fix_Images(image1=fileFix,project=newProject)
-                        NewFixImage.save()
-                        createPyramid(f"media/img/fixed/{newProject.id}/{fileFix}", f"media/img/fixed/{newProject.id}/{NewFixImage.id}_fix")
-
                         fileMov = MovList[i]
-                        NewMovImage = mov_Images(image2 = fileMov, project=newProject)
-                        NewMovImage.save()
-                        createPyramid(f"media/img/moving/{newProject.id}/{fileMov}", f"media/img/moving/{newProject.id}/{NewMovImage.id}_mov")
+
+                        NewRegImages = Registration_Images(image1=fileFix,image2=fileMov, project=newProject)
+                        NewRegImages.save()
+
+                        createPyramid(f"media/img/fixed/{newProject.id}/{fileFix}", f"media/img/fixed/{newProject.id}/{NewRegImages.id}_fix")
+                        createPyramid(f"media/img/moving/{newProject.id}/{fileMov}", f"media/img/moving/{newProject.id}/{NewRegImages.id}_mov")
+
+                        for j in range(int(algNum) + 1):
+                            nameAlg = request.POST['alg' + str(j)]
+                            al = Algorithms.objects.get(name=nameAlg)
+                            newResult = Results(algorithm=al, Registration_Images=NewRegImages)
+
+                            newResult.save()
 
                     ### Annotations ###
 
@@ -160,6 +166,8 @@ def saveNP(request):
                         newAnn = AnnotationsJson(annotation=new_dict, project=newProject)
                         newAnn.save()
 
+
+
                 else:
                     msg = "Moving and Fix Folder must have the same number of files."
 
@@ -194,9 +202,15 @@ def getPoligonInfo(AnnArray):
 
     return polcat, polygons, bboxArr
 
-def viewer(request,id_Project, id_viewer=0, id_alg="None"):
+def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
 
     project = Projects.objects.get(id=id_Project)
+    reg_img = Registration_Images.objects.get(id=id_reg_img)
+
+
+
+    fixImg = f"/main/media/img/fixed/{project.id}/{id_reg_img}_fix.dzi"
+    movImag = f"/main/media/img/moving/{project.id}/{id_reg_img}_mov.dzi"
 
     if id_alg != "None":
         id_alg = int(id_alg)
@@ -210,8 +224,8 @@ def viewer(request,id_Project, id_viewer=0, id_alg="None"):
         y_val = res.y_chessboard
 
 
-        fixImg = f"/main/media/img/fixed/{project.id}_fix.dzi"
-        movImag = f"/main/media/img/moving/{project.id}_mov.dzi"
+        #fixImg = f"/main/media/img/fixed/{project.id}/{id_fix}_fix.dzi"
+        #movImag = f"/main/media/img/moving/{project.id}/{id_mov}_mov.dzi"
         if features_fix:
             features_fix = "/main/media/" + features_fix.name[:-4] + ".dzi"
         if features_mov:
