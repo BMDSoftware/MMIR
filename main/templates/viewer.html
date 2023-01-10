@@ -93,19 +93,22 @@
 
         {% if id_viewer == 4 %}
 
+             <div class="row  p-1 ">
 
-                <div class=" col-auto ">
-                <label  class="col-form-label btn active">Number of Tiles </label>
-                </div>
-
-
-                    <div class=" col-auto ">
-                        <label for="XRange" class="form-label chessSlider" id ="Xlabel" > X = {{x_val}} </label> <input type="range" step="1" class="form-range" min="1" max="20" id="XRange" value="{{x_val}}">
-                    </div>
-                    <div class=" col-auto ">
-                        <label for="YRange" class="form-label chessSlider" id ="Ylabel"> Y = {{y_val}} </label> <input type="range" step="1" class="form-range" min="1" max="20" id="YRange" value="{{y_val}}">
+                    <div class="  offset-md-2  col-md-2 p-2 ">
+                    <label  class="col-form-label btn active">Number of Tiles </label>
                     </div>
 
+
+                        <div class=" col-3 ">
+                            <label for="XRange" class="form-label chessSlider" id ="Xlabel" > X = {{x_val}} </label> <input type="range" step="1" class="form-range" min="1" max="20" id="XRange" value="{{x_val}}">
+                        </div>
+                        <div class=" col-3 ">
+                            <label for="YRange" class="form-label chessSlider" id ="Ylabel"> Y = {{y_val}} </label> <input type="range" step="1" class="form-range" min="1" max="20" id="YRange" value="{{y_val}}">
+                        </div>
+
+
+             </div>
 
 
         {% endif %}
@@ -367,12 +370,14 @@ var viewer2 = OpenSeadragon({
         {% for point in p %}
             {% if forloop.first %}
                 number_of_points = {{forloop.revcounter}}
+
                 factor = Math.floor(number_of_points/100)
                 console.log(factor)
             {% endif %}
 
 
-            //reduce the number of dots in 20
+            //reduce the number of dots in 20 to improve the speed
+            // this part must be improved
             {% if forloop.counter|getMod:20 %}
 
                 arrPol.push({x: {{point.0}}  , y: {{point.1}} })
