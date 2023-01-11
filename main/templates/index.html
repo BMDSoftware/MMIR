@@ -275,8 +275,17 @@ deleteModal.addEventListener('show.bs.modal', function (event) {
   $( "#msgDeleteModal" ).text("Are you sure you want to delete " + recipient +" project?")
 
   $("#acceptDelete").attr("idPDel", Pro_id);
+  $( "#acceptDelete" ).prop( "disabled", false );
 
 })
+
+
+$("#acceptDelete").click(function(){
+
+    $( "#acceptDelete" ).prop( "disabled", true );
+
+});
+
 
 <!-- $("#acceptDelete").click(function(){-->
 <!--   var idPr2del = $(this).attr("idPDel")-->

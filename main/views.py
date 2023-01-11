@@ -356,14 +356,6 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
 
     return render(request, 'viewer.html', context)
 
-def runChessboard(request):
-    data = {"msg": "is a get?"}
-
-    if request.GET:
-        if request.method == "GET":
-            print("por escribir")
-
-    return JsonResponse(data)
 
 
 def savingModel(modelPar, image, strName):
@@ -415,55 +407,43 @@ def deleteProject(request,id_Project):
             #id_Project = request.POST['pId']
             id_Project = str(id_Project)
             project = Projects.objects.get(id=id_Project)
-            results = Results.objects.filter(project=id_Project)
+            reg = Registration_Images.objects.filter(project = id_Project)
+            #results = Results.objects.filter(project=id_Project)
             annotations = AnnotationsJson.objects.filter(project=id_Project)
             ImageMediaF = "media/img/"
-            pathsFolder = [ImageMediaF + "fixed/" + id_Project + "_fix_files",
-                           ImageMediaF + "moving/" + id_Project + "_mov_files"
+            pathsFolder = [ImageMediaF + "fixed/" + id_Project,
+                           ImageMediaF + "moving/" + id_Project
                            ]
 
 
-            pathsFiles = [ImageMediaF + "fixed/" + id_Project + "_fix.dzi",
-                          ImageMediaF + "moving/" + id_Project + "_mov.dzi",
-                          "media/" + project.image1.name,
-                          "media/" + project.image2.name,
-                          ]
+            #pathsFiles = [ImageMediaF + "fixed/" + id_Project + "_fix.dzi",
+             #             ImageMediaF + "moving/" + id_Project + "_mov.dzi",
+                         # "media/" + project.image1.name,
+                         # "media/" + project.image2.name,
+              #            ]
+            for re in reg:
+                results = Results.objects.filter(Registration_Images=re)
+                # append path for every algorithm
+                #pathsFiles.append("media/" + re.image1.name)
+                #pathsFiles.append("media/" + re.image2.name)
+                if results:
 
-            # append path for every algorithm
-            if results:
+                    pathsFolder.append("media/img/results/chess/" + id_Project)
+                    pathsFolder.append("media/img/results/feature_fix/" + id_Project)
+                    pathsFolder.append("media/img/results/feature_mov/" + id_Project)
+                    pathsFolder.append("media/img/results/line_match/" + id_Project)
+                    pathsFolder.append("media/img/results/warp/" + id_Project)
                 for r in results:
-                    pathsFolder.append("media/" + r.features_mov.name[:-4] + "_files")
-                    pathsFolder.append("media/" + r.features_fix.name[:-4] + "_files")
-                    pathsFolder.append("media/" + r.warping.name[:-4] + "_files")
-                    pathsFolder.append("media/" + r.line_match.name[:-4] + "_files")
-                    pathsFolder.append("media/" + r.chessboard.name[:-4] + "_files")
-
-                    if(r.features_mov.name):
-                        pathsFiles.append("media/" + r.features_mov.name[:-4] + ".dzi")
-                        pathsFiles.append("media/" + r.features_mov.name)
-                    if (r.features_fix.name):
-                        pathsFiles.append("media/" + r.features_fix.name[:-4] + ".dzi")
-                        pathsFiles.append("media/" + r.features_fix.name)
-                    if (r.warping.name):
-                        pathsFiles.append("media/" + r.warping.name[:-4] + ".dzi")
-                        pathsFiles.append("media/" + r.warping.name)
-                    if (r.line_match.name):
-                        pathsFiles.append("media/" + r.line_match.name[:-4] + ".dzi")
-                        pathsFiles.append("media/" + r.line_match.name)
-                    if (r.chessboard.name):
-                        pathsFiles.append("media/" + r.chessboard.name[:-4] + ".dzi")
-                        pathsFiles.append("media/" + r.chessboard.name)
+                    r.delete()
+                re.delete()
 
             for p in pathsFolder:
                 if os.path.exists(p):
                     shutil.rmtree(p)
 
-            for pf in pathsFiles:
-                if os.path.exists(pf):
-                    os.remove(pf)
+
 
             annotations.delete()
-            results.delete()
             project.delete()
 
             success =  True
@@ -495,12 +475,13 @@ def dynamicChessboard(request):
             newY = int(request.GET['newY'])
             id_alg = int(request.GET['id_alg'])
             id_proj = int(request.GET['id_project'])
+            id_reg_img = int(request.GET['id_reg'])
 
-            result = Results.objects.get(project=id_proj, algorithm=id_alg)
+            result = Results.objects.get(Registration_Images=id_reg_img, algorithm=id_alg)
 
             wrapping = result.warping.name
-            project = Projects.objects.get(id=id_proj)
-            fix_path = project.image1.name
+            #reg = Registration_Images.objects.get(project__id=id_proj)
+            fix_path = result.Registration_Images.image1.name
 
             wrapping_img  = cv2.imread("media/" + wrapping)
             fix_image = cv2.imread("media/" + fix_path)
@@ -522,7 +503,7 @@ def dynamicChessboard(request):
             array = sitk.GetArrayFromImage(image_list)
             array_rgb = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
 
-            savingModel(result.chessboard, array_rgb, f"chess_{id_proj}_{result.algorithm.name}.jpg")
+            savingModel(result.chessboard, array_rgb, f"chess_{id_proj}_{result.Registration_Images.id}_{result.algorithm.name}.jpg")
 
 
             #createPyramid("media/" + al.chessboard.name, "media/" + al.chessboard.name[:-4])

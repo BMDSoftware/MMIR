@@ -228,7 +228,7 @@ $("#XRange , #YRange").on("change", function() {
     $.ajax({
         type: 'GET',
         url: "{% url 'home:dynamicChessboard' %}",
-        data: jQuery.param({  newX: Xval, newY: Yval, id_alg:{{id_alg}}, id_project:{{id_project}} }) ,
+        data: jQuery.param({  newX: Xval, newY: Yval, id_alg:{{id_alg}}, id_project:{{id_project}}, id_reg:{{id_reg_img}} }) ,
         success: function (data) {
              if (data) {
                  //var obj = JSON.stringify(data);
@@ -472,6 +472,7 @@ $("#SelectAlgor").on('change', function() {
     document.location.href = url + "/"+ viewer_id + "/"+ File_id + "/" +val;
 
 
+
 })
 
 $("#SelectView").on('change', function() {
@@ -479,7 +480,11 @@ $("#SelectView").on('change', function() {
     alg_id = $("#SelectAlgor").val();
     File_id = $("#SelectFiles").val();
     url = "{% url 'home:viewer' id_project  %}";
+
+
+
     document.location.href = url + "/"+ val + "/" + File_id + "/" + alg_id;
+
 
 })
 
@@ -490,7 +495,10 @@ $("#SelectFiles").on('change', function() {
     viewer_id = $("#SelectView").val();
     alg_id = $("#SelectAlgor").val();
     url = "{% url 'home:viewer' id_project  %}";
+
     document.location.href = url + "/"+ viewer_id + "/"+ val + "/" + alg_id;
+
+
 
 
 })
