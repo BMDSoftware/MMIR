@@ -1,0 +1,6 @@
+{
+  "plugins": [
+    "sift_algorithm", "orb_alg"
+  ]
+
+}

@@ -2,8 +2,10 @@ from django.shortcuts import render
 from main.models import *
 from main.forms import *
 from main.img2coco import seg2coco
+from main.utils import *
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
+from main.algorithms import plugin_loader, plugin_register
 from shapely.geometry import Polygon
 import SimpleITK as sitk
 from pathlib import Path
@@ -17,6 +19,26 @@ import copy
 
 pyvips.cache_set_max(0)
 
+## remember add a DELETE when is not in the plugin list
+def init_plugins():
+    # Load plugins
+    with open("main/plugins/plugins_list.json") as file:
+        data_plugins = json.load(file)
+        # load the plugins
+        print("Loading plugins ...")
+        plugin_loader.load_plugins(data_plugins["plugins"])
+        plugins_names =  plugin_register.getAlgNames()
+        print("add plugins to the db ...")
+        for plugin in plugins_names:
+
+            pg_db = Algorithms.objects.filter(name=plugin)
+            if not pg_db:
+
+                newAlg = Algorithms(name= plugin)
+                newAlg.save()
+        print("plugins added")
+
+
 # Create your views here.
 def home(request):
     dtable = Projects.objects.all().order_by('name')
@@ -28,14 +50,7 @@ def home(request):
     return render(request, 'index.html', context)
 
 
-class MyImage:
-    def __init__(self, path):
-        self.img = cv2.imread(path,-1)
-        self.split = path.split("/")
-        self.__name = self.split[-1]
 
-    def __str__(self):
-        return self.__name
 
 
 def saveNP(request):
@@ -186,21 +201,7 @@ def saveNP(request):
     return render(request, 'index.html', context)
 
 
-def getPoligonInfo(AnnArray):
-    polygons = []
-    polcat = []
-    bboxArr = []
-    for an in AnnArray:
-        seg = an["segmentation"]
-        polcat.append(an["category_id"])
-        bboxArr.append(an["bbox"])
 
-
-        for s in seg:
-            poly = np.array(s).reshape((int(len(s) / 2), 2))
-            polygons.append(poly)
-
-    return polcat, polygons, bboxArr
 
 def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
 
@@ -358,43 +359,6 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
 
 
 
-def savingModel(modelPar, image, strName):
-    _, buf = cv2.imencode('.jpg', image)
-    savingImage = ContentFile(buf.tobytes())
-
-    modelPar.save(strName , savingImage)
-
-def createPyramid (cvImagePath,pyramidPath):
-
-    if os.path.exists(pyramidPath+".dzi"):
-        os.remove(pyramidPath+".dzi")
-
-    if os.path.exists(pyramidPath+"_files"):
-        shutil.rmtree(pyramidPath+"_files",ignore_errors=True)
-
-    image = pyvips.Image.new_from_file(cvImagePath)
-    folderName = pyramidPath.split("/")
-
-    image.dzsave(
-        cvImagePath,
-        basename=folderName[-1],
-        suffix=".png",
-        tile_size=1024,
-        overlap=0,
-        depth="onepixel",
-        properties=False
-    )
-
-
-def reduceImage(img):
-    height, width, _ = img.shape
-    #scale_percentage using 2048 as width
-    sp = (2048*100)/width
-    NewWidth = int(width * sp / 100)
-    NewHeight = int(height * sp / 100)
-    dim = (NewWidth, NewHeight)
-    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-    return resized
 
 
 def deleteProject(request,id_Project):
@@ -539,7 +503,7 @@ def runAlg(request):
                 im1Name = reg.image1.name
                 im2Name = reg.image2.name
 
-                print(im1Name)
+
 
                 for al in algorithms:
                     alg = al.algorithm.name
@@ -547,146 +511,56 @@ def runAlg(request):
                     img_color = cv2.imread("media/" + im2Name)
                     img_color2 = cv2.imread("media/"+ im1Name)
 
-                    #createPyramid(f"media/{im1Name}", f"media/img/fixed/{id_Project}_fix")
-                    #createPyramid(f"media/{im2Name}", f"media/img/moving/{id_Project}_mov")
+                    plugin_obj = plugin_register.create(alg, img_color2, img_color)
 
+                    alg_res = plugin_obj.run()
 
-                    img = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
-                    img2 = cv2.cvtColor(img_color2, cv2.COLOR_BGR2GRAY)
+                    if alg_res["f_mov"] is not None:
+                        savingModel(al.features_mov, alg_res["f_mov"], f"features_{id_Project}_{reg.id}_{alg}_moving.jpg")
+                        createPyramid("media/" + al.features_mov.name, "media/" + al.features_mov.name[:-4])
 
-                    height, width, _ = img_color2.shape
+                    if alg_res["f_fix"] is not None:
+                        savingModel(al.features_fix, alg_res["f_fix"], f"features_{id_Project}_{reg.id}_{alg}_fixing.jpg")
+                        createPyramid("media/" + al.features_fix.name, "media/" + al.features_fix.name[:-4])
 
-                    # feature extractor
-                    if (alg == "Sift"):
-                        fExt = cv2.xfeatures2d.SIFT_create()
+                    if alg_res["lineMatch"] is not None:
+                        savingModel(al.line_match, alg_res["lineMatch"], f"lineMatch_{id_Project}_{reg.id}_{alg}.jpg")
+                        createPyramid("media/" + al.line_match.name, "media/" + al.line_match.name[:-4])
 
-                    elif (alg == "Sift+Colorinvertion"):
-                        fExt = cv2.xfeatures2d.SIFT_create()
-                        gray_negative = abs(255 - img2)
-                        #img_flip_ud = cv2.flip(gray_negative, 1)
-                        #img_color2 = cv2.flip(img_color2, 1)
-                        #img2 = img_flip_ud
-                        img2 = gray_negative
+                    if alg_res["warping"] is not None:
+                        savingModel(al.warping, alg_res["warping"], f"warp_{id_Project}_{reg.id}_{alg}.jpg")
+                        createPyramid("media/" + al.warping.name, "media/" + al.warping.name[:-4])
 
-                    elif (alg == "ORB"):
-
-                        fExt = cv2.ORB_create(nfeatures=1000)
-                    elif (alg == "BRIEF"):
-                        fExt = cv2.features2d.BriefDescriptorExtractor()
-                    elif (alg == "BoostDesc"):
-                        fExt = cv2.features2d.BoostDesc()
-
-                    res["alg"].append(alg)
-
-                    keypoints, descriptors = fExt.detectAndCompute(img, None)
-                    keypoints2, descriptors2 = fExt.detectAndCompute(img2, None)
-
-                    keyDraw1 = cv2.drawKeypoints(img, keypoints, None)
-                    keyDraw2 = cv2.drawKeypoints(img2, keypoints2, None)
-
-                    #Path(f"{resultsPath}/{id_Project}/").mkdir(parents=True, exist_ok=True)
-
-                    # save in model opencv images
-                    #keyDraw1= reduceImage(keyDraw1)
-                    #keyDraw2= reduceImage(keyDraw2)
-
-                    savingModel(al.features_mov, keyDraw1, f"features_{id_Project}_{reg.id}_{alg}_moving.jpg")
-                    savingModel(al.features_fix, keyDraw2, f"features_{id_Project}_{reg.id}_{alg}_fixing.jpg")
-
-
-                    createPyramid("media/" +al.features_mov.name, "media/" +al.features_mov.name[:-4])
-                    createPyramid("media/" +al.features_fix.name, "media/" + al.features_fix.name[:-4])
-
-                    FLAN_INDEX_KDTREE = 0
-                    index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
-                    search_params = dict(checks=1000)
-
-                    #flann = cv2.FlannBasedMatcher(index_params, search_params)
-                    flann = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_FLANNBASED)
-
-                    matches = flann.knnMatch(descriptors, descriptors2, k=8)
-
-                    good_matches = []
-
-                    for m1, m2, *_ in matches:
-                        # good_matches.append(m1)
-
-                        if m1.distance < 0.65 * m2.distance:
-                            good_matches.append(m1)
-
-                    matches = good_matches
-
-
-                    lineMatch = cv2.drawMatches(img_color, keypoints, img_color2, keypoints2, matches[:50], None, flags=2)
-                    #lineMatch = reduceImage(lineMatch)
-
-                    savingModel(al.line_match, lineMatch, f"lineMatch_{id_Project}_{reg.id}_{alg}.jpg")
-                    createPyramid("media/" +al.line_match.name,"media/" +al.line_match.name[:-4])
-
-                    no_of_matches = len(matches)
-
-                    # Define empty matrices of shape no_of_matches * 2.
-                    p1 = np.zeros((no_of_matches, 2))
-                    p2 = np.zeros((no_of_matches, 2))
-
-                    for i, match in enumerate(matches):
-                        p1[i, :] = keypoints[match.queryIdx].pt
-                        p2[i, :] = keypoints2[match.trainIdx].pt
-
-
-
-                    if no_of_matches > 3:
-                        homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
-                        transformed_img = cv2.warpPerspective(img_color, homography, (width, height))
-                        #print("mask: ", mask)
-                        #print("Homography: ", homography)
-
-                        #transformed_img_2 = reduceImage(transformed_img)
-
-                        savingModel(al.warping, transformed_img, f"warp_{id_Project}_{reg.id}_{alg}.jpg")
-
-
-
-                        createPyramid("media/" +al.warping.name,"media/" +al.warping.name[:-4])
-
-                        transformed_rgb = cv2.cvtColor(transformed_img, cv2.COLOR_BGR2RGB)
+                        transformed_rgb = cv2.cvtColor(alg_res["warping"], cv2.COLOR_BGR2RGB)
                         img_color2_rgb = cv2.cvtColor(img_color2, cv2.COLOR_BGR2RGB)
 
                         img2_ori_stk = sitk.GetImageFromArray(transformed_rgb, isVector=True)
                         img1_stk = sitk.GetImageFromArray(img_color2_rgb, isVector=True)
 
-
-                        #img1_stk = sitk.ReadImage("media/" + im1Name)
-
-
-
                         img2_ori_stk.SetSpacing([1.0, 1.0])
                         img1_stk.SetSpacing([1.0, 1.0])
 
                         image_list = sitk.CheckerBoard(img2_ori_stk, img1_stk, [4, 4, 4])
+
                         ##convert itk to array
                         array = sitk.GetArrayFromImage(image_list)
                         array_rgb = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
 
-                        #array_rgb = reduceImage(array_rgb)
+                        # array_rgb = reduceImage(array_rgb)
 
                         savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{reg.id}_{alg}.jpg")
-                        createPyramid("media/" +al.chessboard.name,"media/" +al.chessboard.name[:-4])
-
-
-                        ##modify poligons
+                        createPyramid("media/" + al.chessboard.name, "media/" + al.chessboard.name[:-4])
 
                         ann = AnnotationsJson.objects.filter(project=id_Project)
-                        if ann:
-
+                        if ann and  (alg_res["homography"] is not None):
+                            homography = alg_res["homography"]
                             split = im2Name.split("/")
                             mov_filename = split[-1]
 
                             jsonDict = ann[0].annotation
-                            #arrAnn = jsonDict["annotations"]
+                            # arrAnn = jsonDict["annotations"]
                             dictImages = [im for im in jsonDict["images"] if im["file_name"] == mov_filename]
                             id_image = dictImages[0]["id"]
-
 
                             arrAnn = [a for a in jsonDict["annotations"] if a["image_id"] == id_image]
                             newDict = copy.deepcopy(jsonDict)
@@ -708,63 +582,46 @@ def runAlg(request):
                                     # 1
                                     #pol_tuplas = [(s[i],s[i+1]) for i in range(0, len(s), 2)]
                                     #print("area1: ", Polygon(pol_tuplas).area)
-
-
-                                    matrixDot = [np.dot(homography, [[s[i]], [s[i + 1]], [1]]) for i in range(0, len(s), 2)]
+                                    matrixDot = [np.dot(homography, [[s[i]], [s[i + 1]], [1]]) for i in
+                                                 range(0, len(s), 2)]
                                     newPoli = []
                                     for i in matrixDot:
                                         newPoli.append(float(i[0] / i[2]))
                                         newPoli.append(float(i[1] / i[2]))
                                     pol_tuplas2 = [(newPoli[i], newPoli[i + 1]) for i in range(0, len(newPoli), 2)]
-                                    #print("area2: ", Polygon(pol_tuplas2).area)
+                                    # print("area2: ", Polygon(pol_tuplas2).area)
 
                                     newDict["annotations"][index_set]["area"] = Polygon(pol_tuplas2).area
                                     bounds_seg = Polygon(pol_tuplas2).bounds
-                                    newDict["annotations"][index_set]["bbox"] = [bounds_seg[0],bounds_seg[1],bounds_seg[2]-bounds_seg[0],bounds_seg[3]-bounds_seg[1]]
+                                    newDict["annotations"][index_set]["bbox"] = [bounds_seg[0], bounds_seg[1],
+                                                                                 bounds_seg[2] - bounds_seg[0],
+                                                                                 bounds_seg[3] - bounds_seg[1]]
 
-
-                                    #print("bounds_Shap: ", Polygon(pol_tuplas2).bounds)
+                                    # print("bounds_Shap: ", Polygon(pol_tuplas2).bounds)
 
                                     newseg.append(newPoli)
 
-                                    #polygons.append(poly)
+                                    # polygons.append(poly)
                                 newDict["annotations"][index_set]["segmentation"] = newseg
-
-                                ## different way to get the bbox
-                                #box_coord = an["bbox"]
-                                #print("bbox1: ", box_coord)
-                                #bbox_points = [np.dot(homography, [[box_coord[0]],[box_coord[1]] , [1]]) ,  np.dot(homography, [[box_coord[0] + box_coord[2]],[box_coord[1] + box_coord[3]] , [1]]) ]
-                                #box_coord = [[float(i[0] / i[2]) , float(i[1] / i[2])]  for i in bbox_points]
-                                #newBbox = [ box_coord[0][0], box_coord[0][1], box_coord[1][0] - box_coord[0][0], box_coord[1][1] - box_coord[0][1]]
-                                #print("bbox2: ", newBbox)
-
-
-
-                                #newAnn.append(an)
-
-                            #jsonDict["annotations"] = newAnn
-                            #jsonDict["bbox"] = newBbox
 
                             split = im1Name.split("/")
                             fix_filename = split[-1]
 
                             index_images = next((index for (index, d) in enumerate(newDict["images"]) if
-                                              d["id"] == id_image), None)
-                            #change this section for batch (now is only for one image)
-                            newDict["images"][index_images] = {"file_name": fix_filename, "height": height , "width": width, "id": id_image}
+                                                 d["id"] == id_image), None)
+                            # change this section for batch (now is only for one image)
+                            height, width, _ = img_color2.shape
+                            newDict["images"][index_images] = {"file_name": fix_filename, "height": height,
+                                                               "width": width, "id": id_image}
 
-                            #print(jsonDict["annotations"])
+                            # print(jsonDict["annotations"])
 
                             al.annotation_wrap = newDict
                             al.save()
+                    res["result"].append(alg_res["succ"])
 
-
-
-                        res["result"].append(True)
-                    else:
-                        res["result"].append(False)
                     data = {"result": res}
 
     return JsonResponse(data)
 
-
+init_plugins()
