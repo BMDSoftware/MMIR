@@ -1,6 +1,6 @@
 {
   "plugins": [
-    "sift_algorithm", "orb_alg"
+    "sift_algorithm", "orb_alg", "Sift_color_Invertion", "Orb_color_Invertion"
   ]
 
 }

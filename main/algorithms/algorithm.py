@@ -8,4 +8,3 @@ class algorithmCore():
 
     def run(self) -> None:
         """ test """
-#print(self.mov_image.name," - ", self.fix_image.name )

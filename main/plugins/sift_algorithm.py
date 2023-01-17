@@ -14,6 +14,10 @@ class sift_algorithm(algorithmCore):
     ## Boolean  that returns whether the registration was successful or not.
     succ = False
 
+    # in this implimentation the img1, and 2 is not used, but will be need it in  Sift color invertion
+    def feature_extraction(self, img1, img2):
+        return cv2.xfeatures2d.SIFT_create(), img1, img2
+
     def run(self):
 
         #convert images to gray scale
@@ -24,7 +28,7 @@ class sift_algorithm(algorithmCore):
         height, width, _ = self.mov_image.shape
 
         #get features using SIFT
-        fExt = cv2.xfeatures2d.SIFT_create()
+        fExt ,img , img2 = self.feature_extraction(img, img2)
 
         keypoints, descriptors = fExt.detectAndCompute(img, None)
         keypoints2, descriptors2 = fExt.detectAndCompute(img2, None)
@@ -68,6 +72,7 @@ class sift_algorithm(algorithmCore):
         else:
             succ = False
             homography = None
+            transformed_img = None
 
 
         results = {

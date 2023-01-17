@@ -19,7 +19,7 @@ import copy
 
 pyvips.cache_set_max(0)
 
-## remember add a DELETE when is not in the plugin list
+
 def init_plugins():
     # Load plugins
     with open("main/plugins/plugins_list.json") as file:
@@ -36,7 +36,14 @@ def init_plugins():
 
                 newAlg = Algorithms(name= plugin)
                 newAlg.save()
+
         print("plugins added")
+        #DELETE when is not in the plugin list
+        db_Algs = Algorithms.objects.all()
+        for db_al in db_Algs:
+            if db_al.name not in plugins_names:
+                db_al.delete()
+
 
 
 # Create your views here.
