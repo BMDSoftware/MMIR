@@ -1,5 +1,4 @@
 
-
 # Compiled Python bytecode
 *.py[cod]
 
@@ -17,12 +16,12 @@ Thumbs.db
 .idea/
 #main/migrations/
 #setup
-mmir_gui/settings.py
+#mmir_gui/settings.py
 #dockerFiles
-Dockerfile
-docker-compose.yml
-.gitlab-ci.yml
-entrypoint.sh
+#Dockerfile
+#docker-compose.yml
+#.gitlab-ci.yml
+#entrypoint.sh
 
 #Images
 media/
