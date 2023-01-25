@@ -16,6 +16,11 @@ Thumbs.db
 #python
 .idea/
 #main/migrations/
+#setup
+mmir_gui/settings.py
+#dockerFiles
+Dockerfile
+docker-compose.yml
 
 #Images
 media/
