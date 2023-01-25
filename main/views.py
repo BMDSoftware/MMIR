@@ -5,7 +5,8 @@ from main.img2coco import seg2coco
 from main.utils import *
 from django.http import JsonResponse
 from django.core.files.base import ContentFile
-from main.algorithms import plugin_loader, plugin_register
+from main.algorithmsPlugin import plugin_loader, plugin_register
+from django.http import HttpResponse
 from shapely.geometry import Polygon
 import SimpleITK as sitk
 from pathlib import Path
@@ -13,36 +14,13 @@ import numpy as np
 import pyvips
 import json
 import cv2
-import os
+import os, io, zipfile, requests
 import shutil
 import copy
 
 pyvips.cache_set_max(0)
 
 
-def init_plugins():
-    # Load plugins
-    with open("main/plugins/plugins_list.json") as file:
-        data_plugins = json.load(file)
-        # load the plugins
-        print("Loading plugins ...")
-        plugin_loader.load_plugins(data_plugins["plugins"])
-        plugins_names =  plugin_register.getAlgNames()
-        print("add plugins to the db ...")
-        for plugin in plugins_names:
-
-            pg_db = Algorithms.objects.filter(name=plugin)
-            if not pg_db:
-
-                newAlg = Algorithms(name= plugin)
-                newAlg.save()
-
-        print("plugins added")
-        #DELETE when is not in the plugin list
-        db_Algs = Algorithms.objects.all()
-        for db_al in db_Algs:
-            if db_al.name not in plugins_names:
-                db_al.delete()
 
 
 
@@ -57,6 +35,43 @@ def home(request):
     return render(request, 'index.html', context)
 
 
+def downloadFiles(request,id_Project):
+    project = Projects.objects.get(id=id_Project)
+    registration_images = Registration_Images.objects.filter(project=project)
+    wrap_ann = AnnotationswrapJson.objects.filter(project=project)
+    fileList = []
+    jsonList = []
+    for regImage in registration_images:
+        results_obj = Results.objects.filter(Registration_Images=regImage)
+        for res in results_obj:
+            warp_image = res.warping
+            json_annotation = res.annotation_wrap
+            if warp_image != "":
+
+                fileList.append("media/"+ warp_image.name)
+    for wAnn in wrap_ann:
+        if json_annotation != "{}":
+                jsonList.append({
+                    "name":f"annotation___Project_{wAnn.project.name}__Alg_{wAnn.algorithm.name}.json",
+                    "dict":wAnn.annotation})
+    buffer = io.BytesIO()
+
+
+    with zipfile.ZipFile(buffer , 'w') as file_zip:
+        for fileURl in fileList:
+
+            #file_data = requests.get(fileURl).content
+            split = fileURl.split("/")
+            arcname = split[-1]
+            file_zip.write(fileURl,arcname=arcname)
+        for jsonfile in jsonList:
+            json_string = json.dumps(jsonfile["dict"], indent=4)
+            file_zip.writestr(jsonfile["name"], json_string)
+
+    response = HttpResponse(buffer.getvalue())
+    response['Content-Type'] = 'application/x-zip-compressed'
+    response['Content-Disposition'] = f'attachment; filename=Files_project_{id_Project}.zip'
+    return response
 
 
 
@@ -69,8 +84,8 @@ def saveNP(request):
     if request.POST:
         if request.method == "POST":
             form =  ProjectForm(request.POST, request.FILES)
-            print("POST:  ",request.POST)
-            print("FILES: ", request.FILES)
+            #print("POST:  ",request.POST)
+            #print("FILES: ", request.FILES)
 
             if form.is_valid():
 
@@ -143,22 +158,22 @@ def saveNP(request):
                                     depth = 1
                                 image = img.img
                             elif annType == "npz":
-
+                                fileMov = MovList[i]
                                 annFile = annList[i]
                                 filePath = annFile.temporary_file_path()
                                 npzfile = np.load(filePath)
-                                print(npzfile.files)
+                                #print(npzfile.files)
                                 image = npzfile['arr_0']
-                                split = filePath.split("/")
-                                file_name = split[-1]
+                                #split = filePath.split("/")
+                                file_name = str(fileMov.name)
 
-                                dimensions = img.img.shape
+                                dimensions = image.shape
                                 if len(dimensions) > 2:
                                     height, width, depth = dimensions
                                 elif len(dimensions) == 2:
                                     height, width = dimensions
                                     depth = 1
-                                print(file_name,"-" ,height,"-", width, "-",depth)
+                                #print(file_name,"-" ,height,"-", width, "-",depth)
 
                             if depth == len(classes):
                                 ##create images in the dict
@@ -285,7 +300,7 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
         jsonDict = ann[0].annotation
         jsonDictWrap = res.annotation_wrap
 
-        print("mov_filename: ", fix_filename)
+        #print("mov_filename: ", fix_filename)
 
         if jsonDict:
             Ncat = len(jsonDict["categories"])
@@ -302,11 +317,12 @@ def viewer(request,id_Project, id_viewer , id_reg_img, id_alg="None"):
 
 
         if jsonDictWrap:
-            dictImages = [im for im in jsonDictWrap["images"] if im["file_name"] == fix_filename]
+            ann_wrap_json = jsonDictWrap.annotation
+            dictImages = [im for im in ann_wrap_json["images"] if im["file_name"] == fix_filename]
             id_image = dictImages[0]["id"]
 
             ImWidthWrap =  int(dictImages[0]["width"])
-            arrAnnWrap = [a for a in jsonDictWrap["annotations"] if a["image_id"] == id_image ]
+            arrAnnWrap = [a for a in ann_wrap_json["annotations"] if a["image_id"] == id_image ]
 
             polcat_fix, polygons_fix, boxArr_fix = getPoligonInfo(arrAnnWrap)
 
@@ -381,6 +397,7 @@ def deleteProject(request,id_Project):
             reg = Registration_Images.objects.filter(project = id_Project)
             #results = Results.objects.filter(project=id_Project)
             annotations = AnnotationsJson.objects.filter(project=id_Project)
+            annotationsWrap = AnnotationswrapJson.objects.filter(project=id_Project)
             ImageMediaF = "media/img/"
             pathsFolder = [ImageMediaF + "fixed/" + id_Project,
                            ImageMediaF + "moving/" + id_Project
@@ -415,10 +432,11 @@ def deleteProject(request,id_Project):
 
 
             annotations.delete()
+            annotationsWrap.delete()
             project.delete()
 
             success =  True
-            msg = "the project was successfully removed"
+            msg = "the project has been successfully removed"
 
             #except:
 
@@ -558,15 +576,28 @@ def runAlg(request):
                         savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{reg.id}_{alg}.jpg")
                         createPyramid("media/" + al.chessboard.name, "media/" + al.chessboard.name[:-4])
 
-                        ann = AnnotationsJson.objects.filter(project=id_Project)
+                        ann = AnnotationsJson.objects.get(project=id_Project)
                         if ann and  (alg_res["homography"] is not None):
+
+                            checkWrap = AnnotationswrapJson.objects.filter(project=project,algorithm=al.algorithm)
+                            #print(checkWrap)
+                            if checkWrap:
+                                wrapAnn = checkWrap[0]
+                            else:
+                                wrapAnn = AnnotationswrapJson(project=project, annotation=ann.annotation, algorithm=al.algorithm)
+                                wrapAnn.save()
                             homography = alg_res["homography"]
                             split = im2Name.split("/")
                             mov_filename = split[-1]
 
-                            jsonDict = ann[0].annotation
+                            jsonDict = wrapAnn.annotation
+                            #print("jsonDict: ", jsonDict)
                             # arrAnn = jsonDict["annotations"]
-                            dictImages = [im for im in jsonDict["images"] if im["file_name"] == mov_filename]
+                            split = im1Name.split("/")
+                            fix_filename = split[-1]
+
+                            dictImages = [im for im in jsonDict["images"] if (im["file_name"] == mov_filename) or (im["file_name"] == fix_filename)]
+                            #print("dictImages: ",dictImages)
                             id_image = dictImages[0]["id"]
 
                             arrAnn = [a for a in jsonDict["annotations"] if a["image_id"] == id_image]
@@ -579,7 +610,7 @@ def runAlg(request):
                                                   d["id"] == id_annotation), None)
                                 newseg = []
                                 for indxSeg, s in enumerate(seg):
-                                    print("indxAnn: ", indxAnn, " indxSeg: ", indxSeg)
+                                    #print("indxAnn: ", indxAnn, " indxSeg: ", indxSeg)
                                     #poly = np.array(s).reshape((int(len(s) / 2), 2))
                                     #print("poly: ", poly)
                                     #print("s: ", s)
@@ -611,8 +642,6 @@ def runAlg(request):
                                     # polygons.append(poly)
                                 newDict["annotations"][index_set]["segmentation"] = newseg
 
-                            split = im1Name.split("/")
-                            fix_filename = split[-1]
 
                             index_images = next((index for (index, d) in enumerate(newDict["images"]) if
                                                  d["id"] == id_image), None)
@@ -623,12 +652,15 @@ def runAlg(request):
 
                             # print(jsonDict["annotations"])
 
-                            al.annotation_wrap = newDict
+                            wrapAnn.annotation = newDict
+                            wrapAnn.save()
+                            al.annotation_wrap = wrapAnn
                             al.save()
                     res["result"].append(alg_res["succ"])
+
 
                     data = {"result": res}
 
     return JsonResponse(data)
 
-init_plugins()
+#

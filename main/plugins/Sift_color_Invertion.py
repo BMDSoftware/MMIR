@@ -1,7 +1,7 @@
-#from algorithms import algorithm
+#from algorithmsPlugin import algorithm
 from main.plugins.sift_algorithm import sift_algorithm
-#from algorithms.plugin_register import *
-from main.algorithms.plugin_register import *
+#from algorithmsPlugin.plugin_register import *
+from main.algorithmsPlugin.plugin_register import *
 
 import numpy as np
 import cv2
@@ -22,12 +22,14 @@ class Sift_color_Invertion(sift_algorithm):
         # img_color2 = cv2.flip(img_color2, 1)
         # img2 = img_flip_ud
         img2 = gray_negative
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        clahe = cv2.createCLAHE()
 
         img1 = clahe.apply(img1)
-        img2 = clahe.apply(img2)
-        _, img1 = cv2.threshold(img1, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        _, img2 = cv2.threshold(img2, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        #img2 = clahe.apply(img2)
+        #_, img1 = cv2.threshold(img1, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        #_, img2 = cv2.threshold(img2, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+
 
         return fExt, img1, img2
 

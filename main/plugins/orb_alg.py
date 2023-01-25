@@ -1,7 +1,7 @@
-#from algorithms import algorithm
-from main.algorithms import algorithm
-#from algorithms.plugin_register import *
-from main.algorithms.plugin_register import *
+#from algorithmsPlugin import algorithm
+from main.algorithmsPlugin import algorithm
+#from algorithmsPlugin.plugin_register import *
+from main.algorithmsPlugin.plugin_register import *
 
 import numpy as np
 import cv2
@@ -76,9 +76,9 @@ class orb_alg(algorithmCore):
             "warping": transformed_img,
             "homography": homography,
             # optional
-            "f_mov": keyDraw1,
-            "f_fix": keyDraw2,
-            "lineMatch": lineMatch,
+            "f_mov": None,
+            "f_fix": None,
+            "lineMatch": None,
 
         }
 

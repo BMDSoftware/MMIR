@@ -76,6 +76,12 @@
                                                 {% bs_icon 'trash' %}
                                             </button>
 
+                                            <a id=down{{d.id}} class="btn btn-outline-primary download" href="{% url 'home:downloadFiles'  d.id  %}">
+                                                {% bs_icon 'file-earmark-arrow-down' %}
+                                            </a>
+
+
+
                                         </td>
 
 
@@ -258,6 +264,8 @@
 <script>
 
 $( "#pb" ).hide();
+
+
 
 
 var deleteModal = document.getElementById('areYouSure')

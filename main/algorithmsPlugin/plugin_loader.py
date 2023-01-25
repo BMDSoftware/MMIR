@@ -2,12 +2,11 @@
 # the code in https://github.com/ArjanCodes/2021-plugin-architecture has been taken as a basis
 import importlib
 
-
 class PluginInterface:
 
     @staticmethod
     def initialize() -> None:
-        """Register the algorithms as plugins """
+        """Register the algorithmsPlugin as plugins """
 
 
 def import_module(name: str) -> PluginInterface:
@@ -22,3 +21,4 @@ def load_plugins(plugins) -> None:
     for plugin_file in plugins:
         plugin = import_module(plugin_file)
         plugin.initialize()
+

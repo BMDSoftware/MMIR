@@ -1,5 +1,5 @@
-from main.algorithms.algorithm import algorithmCore
-#from algorithms.algorithm import algorithmCore
+from main.algorithmsPlugin.algorithm import algorithmCore
+#from algorithmsPlugin.algorithm import algorithmCore
 #from typing import Any, Callable
 
 

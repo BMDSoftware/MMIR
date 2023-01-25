@@ -78,17 +78,21 @@ WSGI_APPLICATION = 'mmir_gui.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 
-
+##modify the max allowed_paquetif the image that will be load are bigger tha 1 GB
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mmirdb',
         'USER': 'redg',
         'PASSWORD': 'mmir2022',
-        'HOST': '127.0.0.1',
+        #'HOST': '127.0.0.1',
+        'HOST': 'db',
         'PORT': '3306',
+        'CONN_MAX_AGE': 600,
         'OPTIONS': {
             'sql_mode' : 'STRICT_TRANS_TABLES',
+            'autocommit': True,
+
         }
     }
 }

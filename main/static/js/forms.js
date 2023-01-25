@@ -40,6 +40,12 @@ $(document).ready( function () {
 
     $( 'input[name="registrationType"]' ).click(function() {
         var regType = $( 'input[name="registrationType"]:checked' ).attr('value')
+         var annType = $( 'input[name="annotationType"]:checked' ).attr('value')
+
+
+
+
+
         if (regType == "sreg" ){
 
             $('#fImg').removeAttr('webkitdirectory');
@@ -51,10 +57,12 @@ $(document).ready( function () {
             $('#mImg').removeAttr('webkitdirectory');
             $('#mImg').removeAttr('directory');
             $('#mImg').removeAttr('multiple');
+            if( annType == "image" | annType == "npz" ){
 
-            $('#annImage').removeAttr('webkitdirectory');
-            $('#annImage').removeAttr('directory');
-            $('#annImage').removeAttr('multiple');
+                $('#annImage').removeAttr('webkitdirectory');
+                $('#annImage').removeAttr('directory');
+                $('#annImage').removeAttr('multiple');
+            }
 
         }else{
             $('#fImg').attr('webkitdirectory','');
@@ -64,10 +72,11 @@ $(document).ready( function () {
             $('#mImg').attr('webkitdirectory','');
             $('#mImg').attr('directory','');
             $('#mImg').attr('multiple','');
-
-            $('#annImage').attr('webkitdirectory','');
-            $('#annImage').attr('directory','');
-            $('#annImage').attr('multiple','');
+            if( annType == "image" | annType == "npz" ){
+                $('#annImage').attr('webkitdirectory','');
+                $('#annImage').attr('directory','');
+                $('#annImage').attr('multiple','');
+                }
 
         }
 
@@ -197,6 +206,7 @@ $(document).ready( function () {
        var annType = $( 'input[name="annotationType"]:checked' ).attr('value')
 
 
+       var regType = $( 'input[name="registrationType"]:checked' ).attr('value')
 
        if( annType == "image" | annType == "npz" ){
             $( "#extraAnnInfo" ).append('<div class="row p-3 ">'+
@@ -210,7 +220,7 @@ $(document).ready( function () {
                                             '</div>'+
                                             '<div id="classesNames" class="row p-3"></div>')
 
-            var regType = $( 'input[name="registrationType"]:checked' ).attr('value')
+
             if (regType == "sreg" ){
 
 
@@ -237,12 +247,20 @@ $(document).ready( function () {
 
 
        }else if(annType == "json"){
+           // if (regType == "sreg" ){
+                    $( "#extraAnnInfo" ).append('<div id="grpannImage">'+
+                    "<label for='annImage' class='form-label '>Annotation</label>"+
+                    "<input id='annImage' name ='annImage' class='form-control' type='file' >"+
+                    '<div id="ValidannImage" ></div>'+
+                    '</div>')
+            // }else{
 
-        $( "#extraAnnInfo" ).append('<div id="grpannImage">'+
-                "<label for='annImage' class='form-label '>Annotation</label>"+
-                "<input id='annImage' name ='annImage' class='form-control' type='file' >"+
-                '<div id="ValidannImage" ></div>'+
-                '</div>')
+                //$( "#extraAnnInfo" ).append('<div id="grpannImage">'+
+                     //   "<label for='annImage' class='form-label '>Annotation</label>"+
+                   //     "<input id='annImage' name ='annImage' class='form-control' type='file' webkitdirectory directory multiple>"+
+                 //       '<div id="ValidannImage" ></div>'+
+               //         '</div>')
+              //          }
 
        } else{
 

@@ -1,7 +1,7 @@
-#from algorithms import algorithm
-from main.algorithms import algorithm
-#from algorithms.plugin_register import *
-from main.algorithms.plugin_register import *
+#from algorithmsPlugin import algorithm
+from main.algorithmsPlugin import algorithm
+#from algorithmsPlugin.plugin_register import *
+from main.algorithmsPlugin.plugin_register import *
 
 import numpy as np
 import cv2
@@ -22,6 +22,7 @@ class sift_algorithm(algorithmCore):
 
         #convert images to gray scale
         img = cv2.cvtColor(self.fix_image, cv2.COLOR_BGR2GRAY)
+        #img = self.fix_image[:,:,2]
         img2 = cv2.cvtColor(self.mov_image, cv2.COLOR_BGR2GRAY)
 
 
@@ -36,9 +37,9 @@ class sift_algorithm(algorithmCore):
         keyDraw1 = cv2.drawKeypoints(img, keypoints, None)
         keyDraw2 = cv2.drawKeypoints(img2, keypoints2, None)
 
-        FLAN_INDEX_KDTREE = 0
-        index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
-        search_params = dict(checks=1000)
+        #FLAN_INDEX_KDTREE = 0
+        #index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
+        #search_params = dict(checks=3000)
 
         flann = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_FLANNBASED)
         matches = flann.knnMatch(descriptors, descriptors2, k=8)

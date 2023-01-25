@@ -47,6 +47,14 @@ class Algorithms(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+class AnnotationswrapJson(models.Model):
+  annotation = JSONField(default ={})
+  project = models.ForeignKey('Projects', on_delete=models.CASCADE)
+  algorithm = models.ForeignKey('Algorithms', on_delete=models.CASCADE)
+
+  def __unicode__(self):
+      return unicode(self.project.name + " - " + self.id)
+
 class Results(models.Model):
     warping = models.ImageField(max_length=255, storage=OverwriteStorage(),upload_to=results_warp, blank=True)
     features_mov = models.ImageField(max_length=255,storage=OverwriteStorage(),upload_to= results_feature_mov, blank=True)
@@ -55,7 +63,7 @@ class Results(models.Model):
     chessboard = models.ImageField(max_length=255,storage=OverwriteStorage(), upload_to=results_chess, blank=True)
     x_chessboard = models.PositiveSmallIntegerField(default=4)
     y_chessboard = models.PositiveSmallIntegerField(default=4)
-    annotation_wrap = JSONField(default={})
+    annotation_wrap = models.ForeignKey('AnnotationswrapJson', on_delete=models.CASCADE, blank=True, null=True)
 
     algorithm = models.ForeignKey('Algorithms', on_delete=models.CASCADE)
     Registration_Images = models.ForeignKey('Registration_Images', on_delete=models.CASCADE, null=True)

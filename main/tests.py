@@ -3,7 +3,7 @@ from django.test import TestCase
 
 #from main.plugin_register import *
 #from main.plugin_loader import *
-from algorithms import plugin_loader, plugin_register
+from algorithmsPlugin import plugin_loader, plugin_register
 import cv2
 
 import json

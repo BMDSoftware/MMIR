@@ -40,3 +40,12 @@ class AnnotationsJsonAdmin(admin.ModelAdmin):
 
     def name_project(self, obj):
         return obj.project.name
+
+@admin.register(AnnotationswrapJson)
+class AnnotationswrapJsonAdmin(admin.ModelAdmin):
+    search_fields = ('project', )
+    list_display = ('name_project', 'id')
+    list_filter = ('project', )
+
+    def name_project(self, obj):
+        return obj.project.name

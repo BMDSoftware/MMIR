@@ -15,7 +15,7 @@ Thumbs.db
 
 #python
 .idea/
-main/migrations/
+#main/migrations/
 
 #Images
 media/

@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+  db:
+    image: mysql:5.7.39
+    volumes:
+      - ../db:/var/lib/mysql
+    ports:
+      - '3306:3306'
+    command: --max_allowed_packet=1024M
+    environment:
+       MYSQL_USER: 'redg'
+       MYSQL_PASSWORD: 'mmir2022'
+       MYSQL_DATABASE: 'mmirdb'
+       MYSQL_ROOT_PASSWORD: 'mmir2022'
+
+  web:
+    build: .
+    command: >
+      bash -c "python manage.py makemigrations --noinput
+      && python manage.py migrate --noinput
+      && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+
+

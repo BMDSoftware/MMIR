@@ -1,7 +1,7 @@
-#from algorithms import algorithm
+#from algorithmsPlugin import algorithm
 from main.plugins.orb_alg import orb_alg
-#from algorithms.plugin_register import *
-from main.algorithms.plugin_register import *
+#from algorithmsPlugin.plugin_register import *
+from main.algorithmsPlugin.plugin_register import *
 
 import numpy as np
 import cv2
@@ -21,10 +21,10 @@ class Orb_color_Invertion(orb_alg):
         # img_color2 = cv2.flip(img_color2, 1)
         # img2 = img_flip_ud
         img1 = gray_negative
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        clahe = cv2.createCLAHE()
 
-        #img1 = clahe.apply(img1)
-        img2 = clahe.apply(img2)
+        img1 = clahe.apply(img1)
+        #img2 = clahe.apply(img2)
         return fExt, img1, img2
 
 

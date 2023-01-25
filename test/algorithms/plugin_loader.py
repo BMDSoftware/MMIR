@@ -8,7 +8,7 @@ class PluginInterface:
 
     @staticmethod
     def initialize() -> None:
-        """Register the algorithms as plugins """
+        """Register the algorithmsPlugin as plugins """
 
 
 def import_module(name: str) -> PluginInterface:

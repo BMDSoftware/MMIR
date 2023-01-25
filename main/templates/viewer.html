@@ -464,7 +464,7 @@ var viewer2 = OpenSeadragon({
 
 
 $("#SelectAlgor").on('change', function() {
-
+    $( "#pb" ).show();
     val= this.value
     viewer_id = $("#SelectView").val();
     File_id = $("#SelectFiles").val();
@@ -476,6 +476,7 @@ $("#SelectAlgor").on('change', function() {
 })
 
 $("#SelectView").on('change', function() {
+$( "#pb" ).show();
     val= this.value
     alg_id = $("#SelectAlgor").val();
     File_id = $("#SelectFiles").val();
@@ -490,6 +491,7 @@ $("#SelectView").on('change', function() {
 
 
 $("#SelectFiles").on('change', function() {
+$( "#pb" ).show();
 
     val= this.value
     viewer_id = $("#SelectView").val();
