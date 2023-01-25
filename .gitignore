@@ -21,6 +21,8 @@ mmir_gui/settings.py
 #dockerFiles
 Dockerfile
 docker-compose.yml
+.gitlab-ci.yml
+entrypoint.sh
 
 #Images
 media/
