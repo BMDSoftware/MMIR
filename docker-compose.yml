@@ -20,6 +20,12 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+       DB_USER: 'redg'
+       DB_PASS: 'mmir2022'
+       DB_NAME: 'mmirdb'
+       DB_HOST: 'db'
+       DB_PORT: 3306
 
 
 
