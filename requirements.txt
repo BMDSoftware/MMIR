@@ -23,6 +23,7 @@ jsonfield==3.1.0
 kiwisolver==1.4.4
 matplotlib==3.6.0
 mysqlclient==2.1.1
+mysql-connector-python
 networkx==2.8.6
 numpy==1.23.2
 opencv-python==4.6.0.66
