@@ -24,8 +24,8 @@ services:
        DB_PASS: 'mmir2022'
        DB_NAME: 'mmirdb'
        DB_HOST: 'db'
-       DB_PORT: 3306
-       SERVICE_URL: localhost
-       DEBUG: true
+       DB_PORT: '3306'
+       SERVICE_URL: '127.0.0.1'
+       DEBUG: 'true'
 
 
