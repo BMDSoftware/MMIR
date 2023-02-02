@@ -1,7 +1,7 @@
 FROM python:3.8.10
 LABEL author="Rodrigo Escobar Diaz Guerrero <redg@ua.pt>"
 
-WORKDIR /opt/app
+WORKDIR /opt/app/mmir_gui
 
 COPY ./  ./
 CMD mv ./entrypoint.sh /ls
@@ -14,4 +14,4 @@ RUN pip3 install -r requirements.txt
 
 EXPOSE 5000
 
-ENTRYPOINT ["/bin/bash", "/opt/app/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/opt/app/mmir_gui/entrypoint.sh"]
