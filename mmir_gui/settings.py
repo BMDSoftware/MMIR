@@ -29,6 +29,13 @@ DEBUG = environ.get('DEBUG')
 ALLOWED_HOSTS = [environ.get('SERVICE_URL')]
 CSRF_TRUSTED_ORIGINS = ["http://"+environ.get('SERVICE_URL')+"*",
                         "https://"+environ.get('SERVICE_URL')+"*",
+                        "https://localhost:8000",
+                        "https://localhost:5000",
+                        "http://localhost:5000",
+                        "http://localhost:8000",
+                        "https://127.0.0.1:8000",
+                        "https://127.0.0.1:5000",
+
 
                         ]
 
