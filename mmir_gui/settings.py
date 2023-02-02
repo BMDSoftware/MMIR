@@ -27,17 +27,17 @@ SECRET_KEY = 'django-insecure-t%6t!#2#rn8i-l4uria8vj$xw697ww$0aim@!*q=&l9c61q&$6
 DEBUG = environ.get('DEBUG')
 
 ALLOWED_HOSTS = [environ.get('SERVICE_URL')]
-CSRF_TRUSTED_ORIGINS = ["http://"+environ.get('SERVICE_URL')+"*",
-                        "https://"+environ.get('SERVICE_URL')+"*",
-                        "https://localhost:8000",
-                        "https://localhost:5000",
-                        "http://localhost:5000",
-                        "http://localhost:8000",
-                        "https://127.0.0.1:8000",
-                        "https://127.0.0.1:5000",
+#CSRF_TRUSTED_ORIGINS = ["http://"+environ.get('SERVICE_URL')+"*",
+ #                       "https://"+environ.get('SERVICE_URL')+"*",
+  #                      "https://localhost:8000",
+   #                     "https://localhost:5000",
+    #                    "http://localhost:5000",
+     #                   "http://localhost:8000",
+      #                  "https://127.0.0.1:8000",
+       #                 "https://127.0.0.1:5000",
 
 
-                        ]
+           #             ]
 
 # Application definition
 
