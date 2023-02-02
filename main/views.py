@@ -32,7 +32,7 @@ def home(request):
                'alg': alg}
 
 
-    return render(request, 'index.html', context)
+    return render(request, 'index.html', context, content_type='text/html' )
 
 
 def downloadFiles(request,id_Project):
