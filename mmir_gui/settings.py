@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 from os import environ
+import mimetype
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -140,6 +141,7 @@ MEDIA_URL = 'main/media/'
 
 
 STATIC_URL = 'main/static/'
+STATIC_ROOT = 'main/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
