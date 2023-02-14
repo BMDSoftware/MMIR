@@ -22,18 +22,32 @@ def refineKeypoints(kp, dsk, mask_2):
 #img_color = cv2.imread("../media/img/fixed/bridgF2.PNG")
 #img_color2 = cv2.imread("../media/img/moving/bridgeP.jpg")
 
-img_color = cv2.imread("../media/img/fixed/arcF8.jpg")
-img_color2 = cv2.imread("../media/img/fixed/arcF.jpg")
+img_color = cv2.imread("Ute_images/ramman_image.jpg",cv2.IMREAD_UNCHANGED)
+img_color2 = cv2.imread("Ute_images/CZI_4_chanels_RGBA.png", cv2.IMREAD_UNCHANGED)
+
+
+img_color = cv2.rotate(img_color, cv2.ROTATE_90_CLOCKWISE)
 
 #img_color = cv2.imread("../media/img/fixed/chess1.jpg")
 #img_color2 = cv2.imread("../media/img/moving/Pat_1.jpg")
 
 
 # Convert to grayscale.
-img = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
-img2 = cv2.cvtColor(img_color2, cv2.COLOR_BGR2GRAY)
+img = img_color
+img2 = img_color2[:,:,3]
 
-height, width, _ = img_color2.shape
+#pre-processing
+
+gray_negative = abs(255 - img)
+        # img_flip_ud = cv2.flip(gray_negative, 1)
+        # img_color2 = cv2.flip(img_color2, 1)
+        # img2 = img_flip_ud
+
+img = gray_negative
+
+
+
+height, width, *_ = img_color2.shape
 
 #img = cv2.resize(img, (width, height), interpolation = cv2.INTER_AREA)
 
@@ -118,7 +132,7 @@ matches = good_matches
 #matches = matches[:int(len(matches)*0.9)]
 no_of_matches = len(matches)
 
-print(matches[:20])
+#print(matches[:20])
 print(no_of_matches)
 
 
@@ -131,22 +145,22 @@ p1 = np.zeros((no_of_matches, 2))
 p2 = np.zeros((no_of_matches, 2))
 
 for i, match in enumerate(matches):
-  print("#"*50)
-  print(match)
-  print(match.queryIdx)
-  print(match.trainIdx)
-  print(keypoints[match.queryIdx])
-  print(keypoints2[match.trainIdx])
-  print(keypoints[match.queryIdx].pt)
-  print(keypoints2[match.trainIdx].pt)
-  print("#" * 50)
+  #print("#"*50)
+  #print(match)
+  #print(match.queryIdx)
+  #print(match.trainIdx)
+  #print(keypoints[match.queryIdx])
+  #print(keypoints2[match.trainIdx])
+  #print(keypoints[match.queryIdx].pt)
+  #print(keypoints2[match.trainIdx].pt)
+  #print("#" * 50)
   p1[i, :] = keypoints[match.queryIdx].pt
   p2[i, :] = keypoints2[match.trainIdx].pt
 
 
 # Find the homography matrix.
-print(p1, p2)
-print(matches)
+#print(p1, p2)
+#print(matches)
 
 imcol= img_color.copy()
 imcol2= img_color2.copy()

@@ -472,11 +472,17 @@ def dynamicChessboard(request):
             #reg = Registration_Images.objects.get(project__id=id_proj)
             fix_path = result.Registration_Images.image1.name
 
-            wrapping_img  = cv2.imread("media/" + wrapping)
-            fix_image = cv2.imread("media/" + fix_path)
+            wrapping_img  = cv2.imread("media/" + wrapping, cv2.IMREAD_UNCHANGED)
+            fix_image = cv2.imread("media/" + fix_path, cv2.IMREAD_UNCHANGED)
 
             ##fix
             transformed_rgb = cv2.cvtColor(wrapping_img, cv2.COLOR_BGR2RGB)
+            ### temporal code 4-channel image
+            #fix_image[:, :, 0] = fix_image[:, :, 3]
+            #fix_image[:, :, 1] = fix_image[:, :, 3]
+            #fix_image[:, :, 2] = fix_image[:, :, 3]
+
+            ### end temporal code
             img_color2_rgb = cv2.cvtColor(fix_image, cv2.COLOR_BGR2RGB)
 
             img2_ori_stk = sitk.GetImageFromArray(transformed_rgb, isVector=True)
@@ -533,8 +539,10 @@ def runAlg(request):
                 for al in algorithms:
                     alg = al.algorithm.name
 
-                    img_color = cv2.imread("media/" + im2Name)
-                    img_color2 = cv2.imread("media/"+ im1Name)
+                    img_color = cv2.imread("media/" + im2Name, cv2.IMREAD_UNCHANGED)
+                    #print(img_color.shape)
+                    img_color2 = cv2.imread("media/"+ im1Name, cv2.IMREAD_UNCHANGED)
+                    #print(img_color2.shape)
 
                     plugin_obj = plugin_register.create(alg, img_color2, img_color)
 
@@ -557,6 +565,12 @@ def runAlg(request):
                         createPyramid("media/" + al.warping.name, "media/" + al.warping.name[:-4])
 
                         transformed_rgb = cv2.cvtColor(alg_res["warping"], cv2.COLOR_BGR2RGB)
+                        ### temporal code 4-channel image
+                        #img_color2[:,:,0] = img_color2[:,:,3]
+                        #img_color2[:,:,1] = img_color2[:,:,3]
+                        #img_color2[:,:,2] = img_color2[:,:,3]
+
+                        ### end temporal code
                         img_color2_rgb = cv2.cvtColor(img_color2, cv2.COLOR_BGR2RGB)
 
                         img2_ori_stk = sitk.GetImageFromArray(transformed_rgb, isVector=True)
@@ -576,7 +590,7 @@ def runAlg(request):
                         savingModel(al.chessboard, array_rgb, f"chess_{id_Project}_{reg.id}_{alg}.jpg")
                         createPyramid("media/" + al.chessboard.name, "media/" + al.chessboard.name[:-4])
 
-                        ann = AnnotationsJson.objects.get(project=id_Project)
+                        ann = AnnotationsJson.objects.filter(project=id_Project)
                         if ann and  (alg_res["homography"] is not None):
 
                             checkWrap = AnnotationswrapJson.objects.filter(project=project,algorithm=al.algorithm)
@@ -584,7 +598,7 @@ def runAlg(request):
                             if checkWrap:
                                 wrapAnn = checkWrap[0]
                             else:
-                                wrapAnn = AnnotationswrapJson(project=project, annotation=ann.annotation, algorithm=al.algorithm)
+                                wrapAnn = AnnotationswrapJson(project=project, annotation=ann[0].annotation, algorithm=al.algorithm)
                                 wrapAnn.save()
                             homography = alg_res["homography"]
                             split = im2Name.split("/")

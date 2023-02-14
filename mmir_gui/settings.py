@@ -85,8 +85,8 @@ DATABASES = {
         'NAME': 'mmirdb',
         'USER': 'redg',
         'PASSWORD': 'mmir2022',
-        #'HOST': '127.0.0.1',
-        'HOST': 'db',
+        'HOST': '127.0.0.1',
+        #'HOST': 'db',
         'PORT': '3306',
         'CONN_MAX_AGE': 600,
         'OPTIONS': {
