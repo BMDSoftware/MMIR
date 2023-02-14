@@ -17,7 +17,7 @@ The algorithm manager oversees carrying out the execution pipeline of each algor
 The system was developed using the framework Django, JavaScript, and multiple libraries that facilitate the management and annotation of very high-resolution images.
 
 ![img_2.png](img_2.png)
-Figure 1: Proposed registration system with three main modules. A system manager, An algorithm manager, and an image visualization system.
+>Figure 1: Proposed registration system with three main modules. A system manager, An algorithm manager, and an image visualization system.
 
 ### Initialize without docker
 Dependencies:
@@ -59,9 +59,7 @@ python manage.py migrate
 ```
 Run the server
 ```
-
 python manage.py runserver
-
 ```
 ### Initialize with docker
 Dependencies:
@@ -85,18 +83,6 @@ docker-compose up -d
 ### Batch vs Single Registration
 With MMIR-Gui you can perform the registration of a pair of images or a batch of pairs.
 The batch system allows you to load n number of files and n number of annotations. By choosing this option you should load the same number of files in the fixing images, moving images, and annotations, except if a JSON file is used.
-
-
-### Inputs
-Internally all images are read using the python OpenCV library, so only the formats of this library are supported, in the future we intend to add more extensions related to biological formats.
-
-#### Annotations
-There are 3 ways to load annotations, through images, using .npz files or through JSON files using the COCO format.
-
-#### COCO format
-
-### Plugins
-
 
 ### Fix - Moving Images
 Internally all images are read using the python OpenCV library, so only the formats of this library are supported, in the future we intend to add more extensions related to biological formats.
@@ -210,4 +196,3 @@ def initialize() -> None:
 ```
 
 Different examples of plugins could be found in main/plugins/ folder
-

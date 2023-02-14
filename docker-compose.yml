@@ -12,7 +12,8 @@ services:
        MYSQL_USER: 'redg'
        MYSQL_PASSWORD: 'mmir2022'
        MYSQL_DATABASE: 'mmirdb'
-       MYSQL_ROOT_PASSWORD: 'mmir2022'      
+       MYSQL_ROOT_PASSWORD: 'mmir2022'
+
   web:
     build: .
     ports:

@@ -8,33 +8,41 @@ import cv2
 
 
 
-class sift_algorithm(algorithmCore):
+class ram_fluo_sift(algorithmCore):
     ### Algorithm name, this name must be the same in the register() function
-    name = "Sift"
+    name = "ram_fluo_sift"
     ## Boolean  that returns whether the registration was successful or not.
     succ = False
 
     def gray_images(self, im1, im2):
         # convert images to gray scale
-        img1 = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
-        # img = self.fix_image[:,:,2]
-        img2 = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
+        #print(im1.shape)
+        #print(im2.shape)
+
+        #img = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
+
+        img1 = cv2.rotate(im1, cv2.ROTATE_90_CLOCKWISE)
+        img2 = im2[:,:,3]
 
         return img1, img2
 
-    # in this implimentation the img1, and 2 is not used, but will be need it in  Sift color invertion
     def feature_extraction(self, img1, img2):
-        return cv2.xfeatures2d.SIFT_create(), img1, img2
+        fExt = cv2.xfeatures2d.SIFT_create()
+
+        gray_negative = abs(255 - img1)
+        img1 = gray_negative
+
+
+
+        return fExt, img1, img2
 
     def run(self):
-
-        img,img2 = self.gray_images(self.fix_image, self.mov_image)
-
+        fixI, movI = self.gray_images(self.fix_image, self.mov_image)
 
         height, width, _ = self.mov_image.shape
 
-        #get features using SIFT
-        fExt ,img , img2 = self.feature_extraction(img, img2)
+        # get features using SIFT
+        fExt, img, img2 = self.feature_extraction(fixI, movI)
 
         keypoints, descriptors = fExt.detectAndCompute(img, None)
         keypoints2, descriptors2 = fExt.detectAndCompute(img2, None)
@@ -42,28 +50,26 @@ class sift_algorithm(algorithmCore):
         keyDraw1 = cv2.drawKeypoints(img, keypoints, None)
         keyDraw2 = cv2.drawKeypoints(img2, keypoints2, None)
 
-        #FLAN_INDEX_KDTREE = 0
-        #index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
-        #search_params = dict(checks=3000)
+        FLAN_INDEX_KDTREE = 0
+        index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
+        search_params = dict(checks=1000)
 
-        flann = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_FLANNBASED)
-        matches = flann.knnMatch(descriptors, descriptors2, k=8)
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+        matches = flann.knnMatch(descriptors, descriptors2, k=5)
 
         good_matches = []
 
         for m1, m2, *_ in matches:
             # good_matches.append(m1)
 
-            if m1.distance < 0.65 * m2.distance:
+            if m1.distance < 0.90 * m2.distance:
                 good_matches.append(m1)
 
         matches = good_matches
-
-        lineMatch = cv2.drawMatches(self.fix_image, keypoints, self.mov_image, keypoints2, matches[:50], None, flags=2)
-
         no_of_matches = len(matches)
 
-        # Define empty matrices of shape no_of_matches * 2.
+        lineMatch = cv2.drawMatches(img, keypoints, img2, keypoints2, matches[:50], None, flags=2)
+
         p1 = np.zeros((no_of_matches, 2))
         p2 = np.zeros((no_of_matches, 2))
 
@@ -73,31 +79,32 @@ class sift_algorithm(algorithmCore):
 
         if no_of_matches > 3:
             homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
-            transformed_img = cv2.warpPerspective(self.fix_image, homography, (width, height))
+            transformed_img = cv2.warpPerspective(fixI, homography, (width, height))
             succ = True
         else:
             succ = False
             homography = None
             transformed_img = None
 
-
         results = {
-            #mandatory
-            "succ" : succ,
+            # mandatory
+            "succ": succ,
             "warping": transformed_img,
             "homography": homography,
-            #optional
-            "f_mov":keyDraw1,
+            # optional
+            "f_mov": keyDraw1,
             "f_fix": keyDraw2,
-            "lineMatch" : lineMatch,
+            "lineMatch": lineMatch,
 
         }
 
         return results
 
 
+
+
 def initialize() -> None:
-    register("Sift", sift_algorithm)
+    register("ram_fluo_sift", ram_fluo_sift)
 
 
 

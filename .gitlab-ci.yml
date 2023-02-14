@@ -39,6 +39,7 @@ build-image:
     name: "source-and-dockerfile"
     paths:
       - ./*
+    expire_in: 30 seconds
 build-and-push:  
   stage: build
   rules:
