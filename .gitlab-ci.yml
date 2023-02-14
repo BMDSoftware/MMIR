@@ -1,0 +1,66 @@
+variables:
+    APP_NAME: "mmir-gui" # Needs to be lowercase !!!
+    DOCKER_REGISTRY: docker.photonicdata.science
+    http_proxy: ${CI_PROXY}
+    https_proxy: ${CIS_PROXY}
+    no_proxy: ${DOCKER_REGISTRY}
+# Test
+image:
+  name: gcr.io/kaniko-project/executor:v1.7.0-debug
+  entrypoint: [""]
+stages:
+  - build
+build-image:
+  stage: build
+  rules:
+      - if: '$CI_COMMIT_TAG == null'
+  script:
+    - mkdir -p /kaniko/.docker
+    - |-
+       KANIKOPROXYBUILDARGS=""
+       KANIKOCFG="\"auths\":{\"${DOCKER_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${DOCKER_USER}" "${DOCKER_PASS}" | base64 | tr -d '\n')\"}}"
+       if [ "x${http_proxy}" != "x" -o "x${https_proxy}" != "x" ]; then
+        KANIKOCFG="${KANIKOCFG}, \"proxies\": { \"default\": { \"httpProxy\": \"${http_proxy}\", \"httpsProxy\": \"${https_proxy}\", \"noProxy\": \"${no_proxy}\"}}"
+        KANIKOPROXYBUILDARGS="--build-arg=\"http_proxy=${http_proxy}\" --build-arg=\"https_proxy=${https_proxy}\"              --build-arg=\"no_proxy=${no_proxy}\""
+       fi
+       KANIKOCFG="{ ${KANIKOCFG} }"
+       echo "${KANIKOCFG}" > /kaniko/.docker/config.json
+    - >-
+       /kaniko/executor
+       --force
+       --image-fs-extract-retry 5
+       --context "${CI_PROJECT_DIR}"
+       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+       --destination=image
+       --tarPath="${CI_PROJECT_DIR}/Docker_Image.tar"
+       --no-push
+       "${KANIKOPROXYBUILDARGS}"
+  artifacts:
+    name: "source-and-dockerfile"
+    paths:
+      - ./*
+    expire_in: 30 seconds
+build-and-push:  
+  stage: build
+  rules:
+      - if: '$CI_COMMIT_TAG != null'
+  script:
+    - mkdir -p /kaniko/.docker
+    - |-
+       KANIKOPROXYBUILDARGS=""
+       KANIKOCFG="\"auths\":{\"${DOCKER_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${DOCKER_USER}" "${DOCKER_PASS}" | base64 | tr -d '\n')\"}}"
+       if [ "x${http_proxy}" != "x" -o "x${https_proxy}" != "x" ]; then
+        KANIKOCFG="${KANIKOCFG}, \"proxies\": { \"default\": { \"httpProxy\": \"${http_proxy}\", \"httpsProxy\": \"${https_proxy}\", \"noProxy\": \"${no_proxy}\"}}"
+        KANIKOPROXYBUILDARGS="--build-arg=\"http_proxy=${http_proxy}\" --build-arg=\"https_proxy=${https_proxy}\"              --build-arg=\"no_proxy=${no_proxy}\""
+       fi
+       KANIKOCFG="{ ${KANIKOCFG} }"
+       echo "${KANIKOCFG}" > /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor
+      --force
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${DOCKER_REGISTRY}/${APP_NAME}:${CI_COMMIT_TAG}"
+      --destination "${DOCKER_REGISTRY}/${APP_NAME}:latest"
+      "${KANIKOPROXYBUILDARGS}"
+

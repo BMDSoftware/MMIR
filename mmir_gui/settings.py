@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
+from os import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,10 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-t%6t!#2#rn8i-l4uria8vj$xw697ww$0aim@!*q=&l9c61q&$6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = environ.get('DEBUG')
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [environ.get('SERVICE_URL')]
+CSRF_TRUSTED_ORIGINS = ["http://"+environ.get('SERVICE_URL'),
+                      "https://"+environ.get('SERVICE_URL'),
+          ]
 
 # Application definition
 
@@ -45,6 +48,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,12 +86,12 @@ WSGI_APPLICATION = 'mmir_gui.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mmirdb',
-        'USER': 'redg',
-        'PASSWORD': 'mmir2022',
-        'HOST': '127.0.0.1',
-        #'HOST': 'db',
-        'PORT': '3306',
+        'NAME': environ.get('DB_NAME'),
+        'USER': environ.get('DB_USER'),
+        'PASSWORD': environ.get('DB_PASS'),
+        #'HOST': '127.0.0.1',
+        'HOST': environ.get('DB_HOST'),
+        'PORT': environ.get('DB_PORT'),
         'CONN_MAX_AGE': 600,
         'OPTIONS': {
             'sql_mode' : 'STRICT_TRANS_TABLES',
@@ -135,7 +139,9 @@ USE_TZ = True
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'main/media/'
 
+
 STATIC_URL = 'main/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -144,3 +150,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #increase the size of updating data to 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE= 5242880
+
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}

@@ -4,7 +4,7 @@ services:
   db:
     image: mysql:5.7.39
     volumes:
-      - ../db:/var/lib/mysql
+      - ./db:/var/lib/mysql
     ports:
       - '3306:3306'
     command: --max_allowed_packet=1024M
@@ -16,14 +16,17 @@ services:
 
   web:
     build: .
-    command: >
-      bash -c "python manage.py makemigrations --noinput
-      && python manage.py migrate --noinput
-      && python manage.py runserver 0.0.0.0:8000"
     ports:
-      - "8000:8000"
+      - "8000:5000"
     depends_on:
       - db
-
+    environment:
+       DB_USER: 'redg'
+       DB_PASS: 'mmir2022'
+       DB_NAME: 'mmirdb'
+       DB_HOST: 'db'
+       DB_PORT: '3306'
+       SERVICE_URL: '127.0.0.1'
+       DEBUG: 'true'
 
 
