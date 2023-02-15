@@ -21,14 +21,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-t%6t!#2#rn8i-l4uria8vj$xw697ww$0aim@!*q=&l9c61q&$6'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = environ.get('DEBUG')
 
-ALLOWED_HOSTS = [environ.get('SERVICE_URL')]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO','https')
+
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
+ALLOWED_HOSTS = [environ.get('SERVICE_URL'), "localhost", "0.0.0.0",]
 CSRF_TRUSTED_ORIGINS = ["http://"+environ.get('SERVICE_URL'),
-                      "https://"+environ.get('SERVICE_URL'),
+                        "https://"+environ.get('SERVICE_URL'),
+                        "http://0.0.0.0",
+                        "http://localhost",
           ]
 
 # Application definition
@@ -48,7 +55,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -137,10 +143,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = 'main/media/'
+MEDIA_URL = '/main/media/'
 
 
-STATIC_URL = 'main/static/'
+STATIC_URL = '/main/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
@@ -151,9 +157,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #increase the size of updating data to 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE= 5242880
 
-
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}

@@ -16,17 +16,27 @@ services:
 
   web:
     build: .
-    ports:
-      - "8000:5000"
+    expose:
+      - 5000
+    volumes:
+      - static_volume:/opt/app/staticfiles
+      - media_volume:/opt/app/media
     depends_on:
       - db
-    environment:
-       DB_USER: 'redg'
-       DB_PASS: 'mmir2022'
-       DB_NAME: 'mmirdb'
-       DB_HOST: 'db'
-       DB_PORT: '3306'
-       SERVICE_URL: '127.0.0.1'
-       DEBUG: 'true'
+    env_file:
+      - ./.env.dev
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/opt/app/staticfiles
+      - media_volume:/opt/app/media
+    ports:
+      - 1337:80
+    depends_on:
+      - web
+
+volumes:
+  static_volume:
+  media_volume:
 
 

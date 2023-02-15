@@ -9,10 +9,20 @@ RUN python3 -m pip install --upgrade pip
 COPY ./requirements.txt ./requirements.txt
 RUN python3 -m pip install -r requirements.txt
 
-WORKDIR /opt/app/
+
+
+ENV APP_HOME=/opt/app
+RUN mkdir $APP_HOME
+RUN mkdir $APP_HOME/staticfiles
+RUN mkdir $APP_HOME/media
+WORKDIR $APP_HOME
+
+
 
 COPY ./  ./
 CMD mv ./entrypoint.sh /ls
+
+
 
 EXPOSE 5000
 
