@@ -13,30 +13,13 @@ services:
        MYSQL_PASSWORD: 'mmir2022'
        MYSQL_DATABASE: 'mmirdb'
        MYSQL_ROOT_PASSWORD: 'mmir2022'
-
   web:
     build: .
-    expose:
-      - 5000
-    volumes:
-      - static_volume:/opt/app/staticfiles
-      - media_volume:/opt/app/media
+    ports:
+      - 1337:5000
+
     depends_on:
       - db
     env_file:
       - ./.env.dev
-  nginx:
-    build: ./nginx
-    volumes:
-      - static_volume:/opt/app/staticfiles
-      - media_volume:/opt/app/media
-    ports:
-      - 1337:80
-    depends_on:
-      - web
-
-volumes:
-  static_volume:
-  media_volume:
-
 

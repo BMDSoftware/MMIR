@@ -32,11 +32,21 @@ USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
 ALLOWED_HOSTS = [environ.get('SERVICE_URL'), "localhost", "0.0.0.0",]
-CSRF_TRUSTED_ORIGINS = ["http://"+environ.get('SERVICE_URL'),
-                        "https://"+environ.get('SERVICE_URL'),
-                        "http://0.0.0.0",
-                        "http://localhost",
-          ]
+
+
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = ["http://" + environ.get('SERVICE_URL'),
+                            "https://" + environ.get('SERVICE_URL'),
+                            "http://0.0.0.0",
+                            "http://localhost:1337",
+                            "http://localhost:*",
+
+                            ]
+else:
+    CSRF_TRUSTED_ORIGINS = ["http://" + environ.get('SERVICE_URL'),
+                            "https://" + environ.get('SERVICE_URL'),
+                            ]
+
 
 # Application definition
 

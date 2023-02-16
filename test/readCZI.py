@@ -26,3 +26,6 @@ print(new_imag.shape)
 
 cv2.imwrite(f"test_files/CZI_4_chanels_RGBA.png",new_imag)
 cv2.imwrite(f"test_files/CZI_test_ch2.tiff",ch_2)
+cv2.imwrite(f"test_files/CZI_test_ch1.tiff",ch_1)
+cv2.imwrite(f"test_files/CZI_test_ch3.tiff",ch_3)
+cv2.imwrite(f"test_files/CZI_test_ch4.tiff",ch_4)
