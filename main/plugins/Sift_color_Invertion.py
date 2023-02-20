@@ -22,9 +22,11 @@ class Sift_color_Invertion(sift_algorithm):
         # img_color2 = cv2.flip(img_color2, 1)
         # img2 = img_flip_ud
         img2 = gray_negative
-        clahe = cv2.createCLAHE()
 
-        img1 = clahe.apply(img1)
+
+        #clahe = cv2.createCLAHE()
+
+        img1 = img1
         #img2 = clahe.apply(img2)
         #_, img1 = cv2.threshold(img1, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         #_, img2 = cv2.threshold(img2, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
