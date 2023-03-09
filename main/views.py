@@ -22,7 +22,7 @@ import sys
 pyvips.cache_set_max(0)
 
 
-if ('makemigrations' or 'migrate') not in sys.argv:
+if not any(elem in sys.argv for elem in ('makemigrations', 'migrate')):
 
     with open("main/plugins/plugins_list.json") as file:
         data_plugins = json.load(file)
