@@ -70,15 +70,17 @@ class orb_alg(algorithmCore):
             homography = None
             transformed_img = None
 
+
+
         results = {
             # mandatory
             "succ": succ,
             "warping": transformed_img,
             "homography": homography,
             # optional
-            "f_mov": None,
-            "f_fix": None,
-            "lineMatch": None,
+            "f_mov": keyDraw1,
+            "f_fix": keyDraw2,
+            "lineMatch": lineMatch,
 
         }
 

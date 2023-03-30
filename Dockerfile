@@ -16,6 +16,7 @@ ENV APP_HOME=/opt/app
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/staticfiles
 RUN mkdir $APP_HOME/media
+RUN mkdir /tmp/client_body_temp
 WORKDIR $APP_HOME
 
 COPY ./  ./

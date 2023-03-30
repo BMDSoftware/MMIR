@@ -16,14 +16,14 @@ class Orb_color_Invertion(orb_alg):
     def feature_extraction(self, img1, img2):
         fExt = cv2.ORB_create(nfeatures=1000)
         #gray_negative = abs(255 - img1)
-        gray_negative = abs(255 - img1)
+        gray_negative = abs(255 - img2)
         # img_flip_ud = cv2.flip(gray_negative, 1)
         # img_color2 = cv2.flip(img_color2, 1)
         # img2 = img_flip_ud
-        img1 = gray_negative
-        clahe = cv2.createCLAHE()
+        img2 = gray_negative
+        #clahe = cv2.createCLAHE()
 
-        img1 = clahe.apply(img1)
+        #img1 = clahe.apply(img1)
         #img2 = clahe.apply(img2)
         return fExt, img1, img2
 

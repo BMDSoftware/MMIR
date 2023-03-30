@@ -45,6 +45,9 @@ if DEBUG:
 else:
     CSRF_TRUSTED_ORIGINS = ["http://" + environ.get('SERVICE_URL'),
                             "https://" + environ.get('SERVICE_URL'),
+                            "http://0.0.0.0",
+                            "http://localhost:1337",
+                            "http://localhost:*",
                             ]
 
 
@@ -108,7 +111,7 @@ DATABASES = {
         #'HOST': '127.0.0.1',
         'HOST': environ.get('DB_HOST'),
         'PORT': environ.get('DB_PORT'),
-        'CONN_MAX_AGE': 600,
+        'CONN_MAX_AGE': 800,
         'OPTIONS': {
             'sql_mode' : 'STRICT_TRANS_TABLES',
             'autocommit': True,
@@ -164,6 +167,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#increase the size of updating data to 5MB
-DATA_UPLOAD_MAX_MEMORY_SIZE= 5242880
+#increase the size of updating data
+DATA_UPLOAD_MAX_MEMORY_SIZE= 1024000000
+
+#FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
 
