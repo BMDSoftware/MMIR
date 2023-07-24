@@ -81,6 +81,8 @@ class orb_alg(algorithmCore):
             "f_mov": keyDraw1,
             "f_fix": keyDraw2,
             "lineMatch": lineMatch,
+            ## Fix values as metrics just used as example
+            "metrics": {"metrica1":5, "metrica2": "good", "metric3": 0.05}
 
         }
 

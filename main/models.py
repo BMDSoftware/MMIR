@@ -64,6 +64,7 @@ class Results(models.Model):
     x_chessboard = models.PositiveSmallIntegerField(default=4)
     y_chessboard = models.PositiveSmallIntegerField(default=4)
     annotation_wrap = models.ForeignKey('AnnotationswrapJson', on_delete=models.CASCADE, blank=True, null=True)
+    metrics = JSONField(default ={})
 
     algorithm = models.ForeignKey('Algorithms', on_delete=models.CASCADE)
     Registration_Images = models.ForeignKey('Registration_Images', on_delete=models.CASCADE, null=True)

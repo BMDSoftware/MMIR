@@ -28,11 +28,7 @@ media/
 
 
 #test files
-test/test_files/
-test/Ute_images/
-test/Ramanimage/
-test/Image/
-
+test/
 *.czi
 
 

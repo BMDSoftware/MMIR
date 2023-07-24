@@ -30,14 +30,15 @@ Dependencies:
 - MySQL
 - Python 3
 
+Create a DB in MYSQL
 
 Install all the requirement libraries:
 ```
 pip install -r requirements.txt
 ```
-add the environment variables (modify according to your configuration)
+add the environment variables (modify according to your DB configuration)
     With linux:
-        execute the scripts mmmir_gui/localVar.sh
+        execute the scripts mmmir_gui/localVar.sh 
     With Windows added manually
 
 Generate the migrations

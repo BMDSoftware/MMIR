@@ -87,9 +87,10 @@ class sift_algorithm(algorithmCore):
             "warping": transformed_img,
             "homography": homography,
             #optional
-            "f_mov":keyDraw1,
+            "f_mov": keyDraw1,
             "f_fix": keyDraw2,
-            "lineMatch" : lineMatch,
+            "lineMatch": lineMatch,
+            "metrics": None
 
         }
 

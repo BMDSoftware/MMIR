@@ -95,6 +95,7 @@ class ram_fluo_sift(algorithmCore):
             "f_mov": keyDraw1,
             "f_fix": keyDraw2,
             "lineMatch": lineMatch,
+            "metrics": None
 
         }
 

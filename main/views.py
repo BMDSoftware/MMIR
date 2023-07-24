@@ -61,27 +61,35 @@ def downloadFiles(request,id_Project):
     project = Projects.objects.get(id=id_Project)
     registration_images = Registration_Images.objects.filter(project=project)
     wrap_ann = AnnotationswrapJson.objects.filter(project=project)
+
+
     fileList = []
     jsonList = []
+    metricList=[]
     for regImage in registration_images:
         results_obj = Results.objects.filter(Registration_Images=regImage)
+
+
         for res in results_obj:
             warp_image = res.warping
             json_annotation = res.annotation_wrap
+            metric = res.metrics
             if warp_image != "":
-
                 fileList.append("media/"+ warp_image.name)
+            if str(metric) != "{}":
+                metricList.append({
+                    "name": f"metrics___Project_{res.Registration_Images.project.name}__Alg_{res.algorithm.name}.json",
+                    "dict":metric})
     for wAnn in wrap_ann:
         if json_annotation != "{}":
                 jsonList.append({
-                    "name":f"annotation___Project_{wAnn.project.name}__Alg_{wAnn.algorithm.name}.json",
+                    "name": f"annotation___Project_{wAnn.project.name}__Alg_{wAnn.algorithm.name}.json",
                     "dict":wAnn.annotation})
     buffer = io.BytesIO()
 
 
     with zipfile.ZipFile(buffer , 'w') as file_zip:
         for fileURl in fileList:
-
             #file_data = requests.get(fileURl).content
             split = fileURl.split("/")
             arcname = split[-1]
@@ -89,6 +97,9 @@ def downloadFiles(request,id_Project):
         for jsonfile in jsonList:
             json_string = json.dumps(jsonfile["dict"], indent=4)
             file_zip.writestr(jsonfile["name"], json_string)
+        for met in metricList:
+            json_metric = json.dumps(met["dict"], indent=4)
+            file_zip.writestr(met["name"], json_metric)
 
     response = HttpResponse(buffer.getvalue())
     response['Content-Type'] = 'application/x-zip-compressed'
@@ -581,6 +592,11 @@ def runAlg(request):
                     if alg_res["lineMatch"] is not None:
                         savingModel(al.line_match, alg_res["lineMatch"], f"lineMatch_{id_Project}_{reg.id}_{alg}.jpg")
                         createPyramid("media/" + al.line_match.name, "media/" + al.line_match.name[:-4])
+
+                    if alg_res["metrics"] is not None:
+                        al.metrics = alg_res["metrics"]
+                        al.save()
+
 
                     if alg_res["warping"] is not None:
                         savingModel(al.warping, alg_res["warping"], f"warp_{id_Project}_{reg.id}_{alg}.jpg")
