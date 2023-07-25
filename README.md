@@ -1,5 +1,5 @@
 # MMIR
-##Multimodal Image Registration focused on histological images
+## Multimodal Image Registration focused on histological images
 
 MMIR is a Cloud base system  that allows the user:
 
