@@ -15,13 +15,6 @@ Thumbs.db
 #python
 .idea/
 #main/migrations/
-#setup
-#mmir_gui/settings.py
-#dockerFiles
-#Dockerfile
-#docker-compose.yml
-#.gitlab-ci.yml
-#entrypoint.sh
 
 #Images
 media/
@@ -34,3 +27,11 @@ test/
 
 #data_base
 db/
+
+#personal settings
+settings.py
+.env.dev
+docker-compose.yml
+localVar.sh
+.gitlab-ci.yml
+entrypoint.sh
