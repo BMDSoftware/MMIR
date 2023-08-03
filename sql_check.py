@@ -9,7 +9,7 @@ env = os.environ
 
 for n in range(10):
     try:
-        sql.connect(host="asds",#env.get('DB_HOST'),
+        sql.connect(host=env.get('DB_HOST'),
                     port=int(env.get('DB_PORT')),
                     user=env.get('DB_USER'),
                     password=env.get('DB_PASS'),
