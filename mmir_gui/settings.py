@@ -171,4 +171,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_MEMORY_SIZE= 1024000000
 
 #FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
+BS_ICONS_BASE_URL = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/'
 
