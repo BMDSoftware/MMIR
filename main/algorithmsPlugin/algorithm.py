@@ -6,5 +6,5 @@ class algorithmCore():
         self.mov_image = mov_image
         self.fix_image = fix_image
 
-    def run(self) -> None:
+    def run(self,request) -> None:
         """ test """

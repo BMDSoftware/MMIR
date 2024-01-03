@@ -551,7 +551,7 @@ def dynamicChessboard(request):
 
 
 def runAlg(request):
-    res = {"alg":[],"result":[]}
+    res = {"alg":[],"result":[], "msg":[]}
     #resultsPath = "media/img/results"
     if request.POST:
         if request.method == "POST":
@@ -571,6 +571,7 @@ def runAlg(request):
 
                 for al in algorithms:
                     alg = al.algorithm.name
+                    res["alg"].append(str(alg))
 
                     img_color = cv2.imread("media/" + im2Name, cv2.IMREAD_UNCHANGED)
                     #print(img_color.shape)
@@ -579,7 +580,7 @@ def runAlg(request):
 
                     plugin_obj = plugin_register.create(alg, img_color2, img_color)
 
-                    alg_res = plugin_obj.run()
+                    alg_res = plugin_obj.run(request)
 
                     if alg_res["f_mov"] is not None:
                         savingModel(al.features_mov, alg_res["f_mov"], f"features_{id_Project}_{reg.id}_{alg}_moving.jpg")
@@ -709,9 +710,12 @@ def runAlg(request):
                             al.annotation_wrap = wrapAnn
                             al.save()
                     res["result"].append(alg_res["succ"])
+                    res["msg"].append(alg_res["messages"])
 
 
-                    data = {"result": res}
+
+
+    data = {"result": res}
 
     return JsonResponse(data)
 

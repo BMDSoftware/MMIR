@@ -36,68 +36,88 @@ class ram_fluo_sift(algorithmCore):
 
         return fExt, img1, img2
 
-    def run(self):
-        fixI, movI = self.gray_images(self.fix_image, self.mov_image)
+    def run(self,request):
+        try:
+            fixI, movI = self.gray_images(self.fix_image, self.mov_image)
 
-        height, width, _ = self.mov_image.shape
+            height, width, _ = self.mov_image.shape
 
-        # get features using SIFT
-        fExt, img, img2 = self.feature_extraction(fixI, movI)
+            # get features using SIFT
+            fExt, img, img2 = self.feature_extraction(fixI, movI)
 
-        keypoints, descriptors = fExt.detectAndCompute(img, None)
-        keypoints2, descriptors2 = fExt.detectAndCompute(img2, None)
+            keypoints, descriptors = fExt.detectAndCompute(img, None)
+            keypoints2, descriptors2 = fExt.detectAndCompute(img2, None)
 
-        keyDraw1 = cv2.drawKeypoints(img, keypoints, None)
-        keyDraw2 = cv2.drawKeypoints(img2, keypoints2, None)
+            keyDraw1 = cv2.drawKeypoints(img, keypoints, None)
+            keyDraw2 = cv2.drawKeypoints(img2, keypoints2, None)
 
-        FLAN_INDEX_KDTREE = 0
-        index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
-        search_params = dict(checks=1000)
+            FLAN_INDEX_KDTREE = 0
+            index_params = dict(algorithm=FLAN_INDEX_KDTREE, trees=8)
+            search_params = dict(checks=1000)
 
-        flann = cv2.FlannBasedMatcher(index_params, search_params)
-        matches = flann.knnMatch(descriptors, descriptors2, k=5)
+            flann = cv2.FlannBasedMatcher(index_params, search_params)
+            matches = flann.knnMatch(descriptors, descriptors2, k=5)
 
-        good_matches = []
+            good_matches = []
 
-        for m1, m2, *_ in matches:
-            # good_matches.append(m1)
+            for m1, m2, *_ in matches:
+                # good_matches.append(m1)
 
-            if m1.distance < 0.90 * m2.distance:
-                good_matches.append(m1)
+                if m1.distance < 0.90 * m2.distance:
+                    good_matches.append(m1)
 
-        matches = good_matches
-        no_of_matches = len(matches)
+            matches = good_matches
+            no_of_matches = len(matches)
 
-        lineMatch = cv2.drawMatches(img, keypoints, img2, keypoints2, matches[:50], None, flags=2)
+            lineMatch = cv2.drawMatches(img, keypoints, img2, keypoints2, matches[:50], None, flags=2)
 
-        p1 = np.zeros((no_of_matches, 2))
-        p2 = np.zeros((no_of_matches, 2))
+            p1 = np.zeros((no_of_matches, 2))
+            p2 = np.zeros((no_of_matches, 2))
 
-        for i, match in enumerate(matches):
-            p1[i, :] = keypoints[match.queryIdx].pt
-            p2[i, :] = keypoints2[match.trainIdx].pt
+            for i, match in enumerate(matches):
+                p1[i, :] = keypoints[match.queryIdx].pt
+                p2[i, :] = keypoints2[match.trainIdx].pt
 
-        if no_of_matches > 3:
-            homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
-            transformed_img = cv2.warpPerspective(fixI, homography, (width, height))
-            succ = True
-        else:
-            succ = False
-            homography = None
-            transformed_img = None
+            if no_of_matches > 3:
+                homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC)
+                transformed_img = cv2.warpPerspective(fixI, homography, (width, height))
+                succ = True
+                msg =None
+            else:
+                succ = False
+                homography = None
+                transformed_img = None
+                msg = "less than 4 matches were found, pelase try with another algorithm"
 
-        results = {
-            # mandatory
-            "succ": succ,
-            "warping": transformed_img,
-            "homography": homography,
-            # optional
-            "f_mov": keyDraw1,
-            "f_fix": keyDraw2,
-            "lineMatch": lineMatch,
-            "metrics": None
+            results = {
+                # mandatory
+                "succ": succ,
+                "warping": transformed_img,
+                "homography": homography,
+                # optional
+                "f_mov": keyDraw1,
+                "f_fix": keyDraw2,
+                "lineMatch": lineMatch,
+                "metrics": None,
+                "messages": msg
 
-        }
+            }
+        except Exception as e:
+            msg = str(e)
+            results = {
+                # mandatory
+                "succ": False,
+                "warping": None,
+                "homography": None,
+                # optional
+                "f_mov": None,
+                "f_fix": None,
+                "lineMatch": None,
+                "metrics": None,
+                "messages": msg
+
+            }
+
 
         return results
 

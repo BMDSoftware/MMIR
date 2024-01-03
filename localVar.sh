@@ -1,4 +1,5 @@
 #!/bin/sh
+
 echo "adding variables"
 export DEBUG="True"
 export SERVICE_URL='127.0.0.1'
