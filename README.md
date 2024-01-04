@@ -180,7 +180,7 @@ class newPlugin(algorithmCore):
 		    "f_mov": Image in BGR with the features find it in the moving image,
 		    "f_fix": Image in BGR with the features find it in the fixing image,
 		    "lineMatch": Image in BGR with the line matches,
-		    "messages": string characters with the error information (in case the execution was not correct)
+		    "messages": string characters with the error information (in case the execution was not correct).
 		    }
 		    
 		return results
