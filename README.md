@@ -176,9 +176,11 @@ class newPlugin(algorithmCore):
 		    #mandatory with annotations
 		    "homography": homography_matrix like OpenCV.findHomography(),
 		    #optional
+		    #If any of these optional keys are unused, they may return a None value in the dictionary.
 		    "f_mov": Image in BGR with the features find it in the moving image,
 		    "f_fix": Image in BGR with the features find it in the fixing image,
 		    "lineMatch": Image in BGR with the line matches,
+		    "messages": string characters with the error information (in case the execution was not correct)
 		    }
 		    
 		return results
